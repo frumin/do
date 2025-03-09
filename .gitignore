@@ -1,10 +1,23 @@
+# Swift
 .DS_Store
 /.build
 /Packages
+/*.xcodeproj
 xcuserdata/
 DerivedData/
-.swiftpm/configuration/registries.json
-.swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
+.swiftpm/
+Package.resolved
+
+# Project specific
+TodoCLI/.build/
+TodoCLI/Package.resolved
+TodoApp/.build/
+TodoApp/Package.resolved
+
+# Local todo files
+~/.todo.json
+~/.todo.archive.json
+
 .netrc
 todos.html
 
