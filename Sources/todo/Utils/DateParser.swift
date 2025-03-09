@@ -12,7 +12,7 @@ enum DateParserError: Error {
                 You can use:
                 - Calendar dates (like '2024-03-15')
                 - Natural phrases (like 'tomorrow' or 'next monday')
-                - Relative times (like 'in 2 weeks' or 'in 3 days')
+                - Relative times (like 'in 2 minutes', 'in 3 hours', 'in 4 days')
                 """
         }
     }
@@ -65,22 +65,55 @@ struct DateParser {
             }
         }
         
-        // Handle "in X days/weeks/months"
+        // Handle "in X minutes/hours/days/weeks/months"
         if lowercased.starts(with: "in ") {
             let parts = lowercased.dropFirst(3).split(separator: " ")
             if parts.count == 2,
-               let number = Int(parts[0]),
-               let unit = parts[1].first {
-                switch unit {
-                case "d": // days
+               let number = Int(parts[0]) {
+                let unit = parts[1].lowercased()
+                
+                // Handle plural forms
+                let singularUnit = unit.hasSuffix("s") ? String(unit.dropLast()) : unit
+                
+                switch singularUnit {
+                case "minute", "min":
+                    return now + number.minutes
+                case "hour", "hr":
+                    return now + number.hours
+                case "day":
                     return now + number.days
-                case "w": // weeks
+                case "week", "wk":
                     return now + (number * 7).days
-                case "m": // months
+                case "month":
                     return now + number.months
                 default:
                     break
                 }
+            }
+        }
+        
+        // Handle "X minutes/hours/days/weeks/months" (without "in")
+        let parts = lowercased.split(separator: " ")
+        if parts.count == 2,
+           let number = Int(parts[0]) {
+            let unit = parts[1].lowercased()
+            
+            // Handle plural forms
+            let singularUnit = unit.hasSuffix("s") ? String(unit.dropLast()) : unit
+            
+            switch singularUnit {
+            case "minute", "min":
+                return now + number.minutes
+            case "hour", "hr":
+                return now + number.hours
+            case "day":
+                return now + number.days
+            case "week", "wk":
+                return now + (number * 7).days
+            case "month":
+                return now + number.months
+            default:
+                break
             }
         }
         
