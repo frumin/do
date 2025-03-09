@@ -7,20 +7,46 @@ struct ListCommand: ParsableCommand {
         abstract: "List all todo items"
     )
     
-    // Instead of storing the output stream, we'll create a static function for testing
-    static func listTodos(to output: inout some TextOutputStream) throws {
-        let todos = try Todo.storage.readTodos()
-        for (index, todo) in todos.enumerated() {
-            print("\(index + 1). \(todo)", to: &output)
+    @Flag(name: .shortAndLong, help: "Sort by priority")
+    var byPriority = false
+    
+    @Flag(name: .shortAndLong, help: "Show only high priority items")
+    var highPriority = false
+    
+    @Flag(name: .shortAndLong, help: "Disable colored output")
+    var noColor = false
+    
+    static func listTodos(to output: inout some TextOutputStream, todos: [TodoItem], byPriority: Bool = false, highPriorityOnly: Bool = false, colored: Bool = true) throws {
+        var displayTodos = todos
+        
+        if highPriorityOnly {
+            displayTodos = todos.filter { $0.priority == .high }
         }
-        if todos.isEmpty {
+        
+        if byPriority {
+            displayTodos.sort { $0.priority < $1.priority }
+        }
+        
+        if displayTodos.isEmpty {
             print("No todos yet!", to: &output)
+            return
+        }
+        
+        for (index, todo) in displayTodos.enumerated() {
+            print(todo.format(index: index + 1, colored: colored), to: &output)
         }
     }
     
     func run() throws {
         var stdout = StandardOutputStream()
-        try ListCommand.listTodos(to: &stdout)
+        let todos = try Todo.storage.readTodos()
+        try ListCommand.listTodos(
+            to: &stdout,
+            todos: todos,
+            byPriority: byPriority,
+            highPriorityOnly: highPriority,
+            colored: !noColor
+        )
     }
 }
 

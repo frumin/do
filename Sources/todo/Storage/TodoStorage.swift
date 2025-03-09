@@ -2,24 +2,27 @@ import Foundation
 
 struct TodoStorage {
     private let todoFile: URL
+    private let encoder = JSONEncoder()
+    private let decoder = JSONDecoder()
     
     init(filePath: URL? = nil) {
         self.todoFile = filePath ?? FileManager.default.homeDirectoryForCurrentUser
             .appendingPathComponent(".todo")
-            .appendingPathExtension("txt")
+            .appendingPathExtension("json")
     }
     
-    func readTodos() throws -> [String] {
+    func readTodos() throws -> [TodoItem] {
         if !FileManager.default.fileExists(atPath: todoFile.path) {
-            try "".write(to: todoFile, atomically: true, encoding: .utf8)
+            try "[]".write(to: todoFile, atomically: true, encoding: .utf8)
+            return []
         }
-        let content = try String(contentsOf: todoFile, encoding: .utf8)
-        return content.split(separator: "\n").map(String.init)
+        let data = try Data(contentsOf: todoFile)
+        return try decoder.decode([TodoItem].self, from: data)
     }
     
-    func writeTodos(_ todos: [String]) throws {
-        let content = todos.joined(separator: "\n")
-        try content.write(to: todoFile, atomically: true, encoding: .utf8)
+    func writeTodos(_ todos: [TodoItem]) throws {
+        let data = try encoder.encode(todos)
+        try data.write(to: todoFile, atomically: true)
     }
     
     func deleteTodoFile() throws {
