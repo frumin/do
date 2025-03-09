@@ -76,12 +76,14 @@ struct ListCommand: ParsableCommand {
         
         // Apply sorting
         if byPriority {
-            todos.sort { $0.priority.sortValue < $1.priority.sortValue }
+            todos.sort { (a: Todo, b: Todo) -> Bool in
+                a.priority.sortValue < b.priority.sortValue
+            }
             appliedFilters.append("sorted by priority")
         } else if byDate {
-            todos.sort { 
-                guard let date1 = $0.dueDate else { return false }
-                guard let date2 = $1.dueDate else { return true }
+            todos.sort { (a: Todo, b: Todo) -> Bool in
+                guard let date1 = a.dueDate else { return false }
+                guard let date2 = b.dueDate else { return true }
                 return date1 < date2
             }
             appliedFilters.append("sorted by due date")

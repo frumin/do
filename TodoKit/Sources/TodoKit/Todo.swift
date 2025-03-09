@@ -28,45 +28,12 @@ public struct Todo: Identifiable, Codable, Equatable {
         self.createdAt = createdAt
     }
     
-    public enum Priority: String, Codable, CaseIterable, ExpressibleByArgument {
-        case high
-        case medium
-        case low
-        case none
-        
-        public var symbol: String {
-            switch self {
-            case .high: return "⚡"
-            case .medium: return "●"
-            case .low: return "○"
-            case .none: return " "
-            }
-        }
-        
-        #if canImport(SwiftUI)
-        public var color: Color {
-            switch self {
-            case .high: return .red
-            case .medium: return .yellow
-            case .low: return .green
-            case .none: return .primary
-            }
-        }
-        #endif
-    }
-}
-
-extension Todo {
-    public var isOverdue: Bool {
-        guard let dueDate else { return false }
-        return dueDate < Date()
-    }
-    
     public var formattedDueDate: String? {
-        guard let dueDate else { return nil }
+        guard let dueDate = dueDate else { return nil }
+        
         let formatter = DateFormatter()
-        formatter.dateStyle = .short
-        formatter.timeStyle = .none
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
         return formatter.string(from: dueDate)
     }
     
@@ -74,6 +41,19 @@ extension Todo {
         tags.map { "#\($0)" }.joined(separator: " ")
     }
     
+    public var isOverdue: Bool {
+        guard let dueDate = dueDate else { return false }
+        return dueDate < Date()
+    }
+    
+    #if canImport(SwiftUI)
+    public var color: Color {
+        priority.color
+    }
+    #endif
+}
+
+extension Todo {
     public func format(index: Int? = nil) -> String {
         var parts: [String] = []
         

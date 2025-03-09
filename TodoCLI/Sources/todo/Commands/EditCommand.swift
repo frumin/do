@@ -49,7 +49,11 @@ struct EditCommand: ParsableCommand {
         if removeDue {
             todo.dueDate = nil
         } else if let dueString = due {
-            todo.dueDate = DateParser.parse(dueString)
+            do {
+                todo.dueDate = try DateParser.parse(dueString)
+            } catch {
+                throw ValidationError("Invalid date format. Please use YYYY-MM-DD or natural language like 'tomorrow'.")
+            }
         }
         
         if removeTags {
@@ -64,8 +68,8 @@ struct EditCommand: ParsableCommand {
         print("\n✏️ Updated todo #\(number):")
         print("─────────────────────")
         if oldTodo != todo {
-            print("Before: \(oldTodo.format())")
-            print("After:  \(todo.format())")
+            print("Before: \(oldTodo.format(index: number))")
+            print("After:  \(todo.format(index: number))")
             
             // Show what changed
             var changes: [String] = []

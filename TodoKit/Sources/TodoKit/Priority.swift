@@ -1,5 +1,6 @@
 import Foundation
 import ArgumentParser
+import SwiftUI
 
 public enum Priority: String, Codable, ExpressibleByArgument {
     case high
@@ -50,10 +51,21 @@ public enum Priority: String, Codable, ExpressibleByArgument {
     
     public var sortValue: Int {
         switch self {
-        case .high: return 1
-        case .medium: return 2
-        case .low: return 3
-        case .none: return 4
+        case .high: return 0
+        case .medium: return 1
+        case .low: return 2
+        case .none: return 3
         }
     }
+    
+    #if canImport(SwiftUI)
+    public var color: Color {
+        switch self {
+        case .high: return .red
+        case .medium: return .yellow
+        case .low: return .green
+        case .none: return .primary
+        }
+    }
+    #endif
 } 

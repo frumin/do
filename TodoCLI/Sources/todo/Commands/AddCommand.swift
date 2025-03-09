@@ -28,7 +28,11 @@ struct AddCommand: ParsableCommand {
         }
         
         if let dueString = due {
-            todo.dueDate = DateParser.parse(dueString)
+            do {
+                todo.dueDate = try DateParser.parse(dueString)
+            } catch {
+                throw ValidationError("Invalid date format. Please use YYYY-MM-DD or natural language like 'tomorrow'.")
+            }
         }
         
         if let tagsString = tags {
@@ -36,21 +40,22 @@ struct AddCommand: ParsableCommand {
         }
         
         try Todo.storage.addTodo(todo)
+        let todos = try Todo.storage.readTodos()
         print("\n✨ Added new todo:")
         print("─────────────────")
-        print(todo.format())
+        print(todo.format(index: todos.count))
         
         // Show helpful next steps
         print("\n📝 Next steps:")
         print("• List all todos: todo list")
         if todo.priority == .none {
-            print("• Set priority: todo edit \(try Todo.storage.readTodos().count) --priority 1")
+            print("• Set priority: todo edit \(todos.count) --priority 1")
         }
         if todo.dueDate == nil {
-            print("• Add due date: todo edit \(try Todo.storage.readTodos().count) --due \"tomorrow 2pm\"")
+            print("• Add due date: todo edit \(todos.count) --due \"tomorrow 2pm\"")
         }
         if todo.tags.isEmpty {
-            print("• Add tags: todo edit \(try Todo.storage.readTodos().count) --tags \"work,important\"")
+            print("• Add tags: todo edit \(todos.count) --tags \"work,important\"")
         }
     }
 } 

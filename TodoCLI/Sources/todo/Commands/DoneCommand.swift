@@ -29,10 +29,10 @@ struct DoneCommand: ParsableCommand {
         // Remove todos in descending order
         for number in sortedNumbers {
             let todo = todos[number - 1]
-            print(todo.format())
+            print(todo.format(index: number))
             
             // Archive the todo
-            let archivedItem = ArchivedTodoItem(todo: todo, reason: .completed)
+            let archivedItem = ArchivedTodoItem(todo: todo, archivedAt: Date(), reason: .completed)
             archive.append(archivedItem)
             
             // Remove from active todos
