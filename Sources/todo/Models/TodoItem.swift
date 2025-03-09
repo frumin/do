@@ -31,6 +31,7 @@ enum Priority: String, Codable, Comparable {
 }
 
 struct TodoItem: Codable {
+    let id: UUID
     let title: String
     var priority: Priority
     let createdAt: Date
@@ -38,6 +39,7 @@ struct TodoItem: Codable {
     var tags: Set<String>
     
     init(title: String, priority: Priority = .none, dueDate: Date? = nil, tags: Set<String> = []) {
+        self.id = UUID()
         self.title = title
         self.priority = priority
         self.createdAt = Date()
@@ -47,6 +49,7 @@ struct TodoItem: Codable {
     
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
         title = try container.decode(String.self, forKey: .title)
         priority = try container.decode(Priority.self, forKey: .priority)
         createdAt = try container.decode(Date.self, forKey: .createdAt)

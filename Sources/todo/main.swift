@@ -12,7 +12,8 @@ struct Todo: ParsableCommand {
             AddCommand.self,
             ListCommand.self,
             DoneCommand.self,
-            RemoveCommand.self
+            RemoveCommand.self,
+            ArchiveCommand.self
         ]
     )
     

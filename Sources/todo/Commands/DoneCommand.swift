@@ -15,7 +15,7 @@ struct DoneCommand: ParsableCommand {
         guard number > 0 && number <= todos.count else {
             throw ValidationError("Invalid todo number")
         }
-        todos.remove(at: number - 1)
-        try Todo.storage.writeTodos(todos)
+        let todo = todos[number - 1]
+        try Todo.storage.archiveTodo(todo, reason: .completed)
     }
 } 
