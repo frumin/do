@@ -1,5 +1,4 @@
 import Foundation
-import SwiftDate
 
 enum DateParserError: Error {
     case invalidFormat
@@ -25,26 +24,24 @@ struct DateParser {
         isoFormatter.dateFormat = "yyyy-MM-dd"
         isoFormatter.timeZone = .current
         if let date = isoFormatter.date(from: input) {
-            return date
+            return Calendar.current.startOfDay(for: date)
         }
-        
-        // Initialize SwiftDate
-        SwiftDate.defaultRegion = Region.current
         
         // Try natural language parsing
         let lowercased = input.lowercased()
         let now = Date()
+        let calendar = Calendar.current
         
         // Handle relative dates
         switch lowercased {
         case "today":
-            return Calendar.current.startOfDay(for: now)
+            return calendar.startOfDay(for: now)
         case "tomorrow":
-            return Calendar.current.startOfDay(for: now + 1.days)
+            return calendar.startOfDay(for: calendar.date(byAdding: .day, value: 1, to: now)!)
         case "next week":
-            return Calendar.current.startOfDay(for: now + 7.days)
+            return calendar.startOfDay(for: calendar.date(byAdding: .weekOfYear, value: 1, to: now)!)
         case "next month":
-            return Calendar.current.startOfDay(for: now + 1.months)
+            return calendar.startOfDay(for: calendar.date(byAdding: .month, value: 1, to: now)!)
         default:
             break
         }
@@ -57,12 +54,12 @@ struct DateParser {
         
         for (day, weekdayNum) in weekdays {
             if lowercased.contains("next \(day)") {
-                let today = now.weekday
+                let today = calendar.component(.weekday, from: now)
                 var daysToAdd = weekdayNum - today
                 if daysToAdd <= 0 {
                     daysToAdd += 7
                 }
-                return now + daysToAdd.days
+                return calendar.startOfDay(for: calendar.date(byAdding: .day, value: daysToAdd, to: now)!)
             }
         }
         
@@ -78,15 +75,15 @@ struct DateParser {
                 
                 switch singularUnit {
                 case "minute", "min":
-                    return now + number.minutes
+                    return calendar.date(byAdding: .minute, value: number, to: now)!
                 case "hour", "hr":
-                    return now + number.hours
+                    return calendar.date(byAdding: .hour, value: number, to: now)!
                 case "day":
-                    return now + number.days
+                    return calendar.startOfDay(for: calendar.date(byAdding: .day, value: number, to: now)!)
                 case "week", "wk":
-                    return now + (number * 7).days
+                    return calendar.startOfDay(for: calendar.date(byAdding: .weekOfYear, value: number, to: now)!)
                 case "month":
-                    return now + number.months
+                    return calendar.startOfDay(for: calendar.date(byAdding: .month, value: number, to: now)!)
                 default:
                     break
                 }
@@ -104,15 +101,15 @@ struct DateParser {
             
             switch singularUnit {
             case "minute", "min":
-                return now + number.minutes
+                return calendar.date(byAdding: .minute, value: number, to: now)!
             case "hour", "hr":
-                return now + number.hours
+                return calendar.date(byAdding: .hour, value: number, to: now)!
             case "day":
-                return now + number.days
+                return calendar.startOfDay(for: calendar.date(byAdding: .day, value: number, to: now)!)
             case "week", "wk":
-                return now + (number * 7).days
+                return calendar.startOfDay(for: calendar.date(byAdding: .weekOfYear, value: number, to: now)!)
             case "month":
-                return now + number.months
+                return calendar.startOfDay(for: calendar.date(byAdding: .month, value: number, to: now)!)
             default:
                 break
             }
