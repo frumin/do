@@ -58,6 +58,11 @@ todo remove 1 2 3       # Remove multiple todos
 
 # Edit todos
 todo edit 1 --text "New text" --priority medium
+
+# View statistics
+todo stats               # Show basic statistics
+todo stats --tags       # Show tag statistics
+todo stats --archived   # Include archived todos
 ```
 
 For more details on any command, use:

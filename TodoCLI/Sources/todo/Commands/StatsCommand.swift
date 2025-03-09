@@ -5,160 +5,135 @@ import TodoKit
 struct StatsCommand: ParsableCommand {
     static var configuration = CommandConfiguration(
         commandName: "stats",
-        abstract: "See how you're doing with your tasks 📊"
+        abstract: "Show todo statistics 📊"
     )
     
-    @Flag(name: .shortAndLong, help: "Include your completed tasks in the stats")
+    @Flag(name: [.customShort("a"), .long], help: "Include archived todos")
     var includeArchived = false
     
-    @Flag(name: .shortAndLong, help: "See how you're using tags")
-    var tags = false
+    @Flag(name: [.customShort("t"), .long], help: "Show tag statistics")
+    var showTags = false
     
-    @Flag(name: .shortAndLong, help: "Turn off colorful output")
-    var noColor = false
-    
-    @Flag(name: .shortAndLong, help: "Create a pretty web page of your stats")
+    @Flag(name: [.customShort("m"), .long], help: "Output in HTML format")
     var html = false
     
-    @Option(name: [.customShort("f"), .long], help: "Save the web page to a file")
-    var outputFile: String?
-    
-    func run() throws {
+    mutating func run() throws {
+        var stats = TodoStats()
         let todos = try Todo.storage.readTodos()
-        let archived = includeArchived ? try Todo.storage.readArchive() : []
+        stats.add(todos: todos)
         
-        // Basic stats
-        var output = ""
-        let activeCount = todos.count
-        let archivedCount = archived.count
-        let totalCount = activeCount + archivedCount
-        
-        // Priority stats
-        let highPriority = todos.filter { $0.priority == .high }.count
-        let mediumPriority = todos.filter { $0.priority == .medium }.count
-        let lowPriority = todos.filter { $0.priority == .low }.count
-        let noPriority = todos.filter { $0.priority == .none }.count
-        
-        // Due date stats
-        let withDueDate = todos.filter { $0.dueDate != nil }.count
-        let overdue = todos.filter { $0.isOverdue }.count
-        let dueSoon = todos.filter { 
-            guard let dueDate = $0.dueDate else { return false }
-            return dueDate > Date() && dueDate <= Date().addingTimeInterval(7 * 24 * 3600)
-        }.count
-        
-        // Tag stats
-        let withTags = todos.filter { !$0.tags.isEmpty }.count
-        let allTags = todos.reduce(into: [String: Int]()) { dict, todo in
-            for tag in todo.tags {
-                dict[tag, default: 0] += 1
-            }
+        if includeArchived {
+            let archived = try Todo.storage.readArchive()
+            stats.add(archived: archived)
         }
-        
-        // Archive stats
-        let completedCount = archived.filter { $0.reason == ArchiveReason.completed }.count
-        let deletedCount = archived.filter { $0.reason == ArchiveReason.deleted }.count
-        let expiredCount = archived.filter { $0.reason == ArchiveReason.expired }.count
         
         if html {
-            output = HTMLFormatter.formatStats(
-                activeCount: activeCount,
-                archivedCount: archivedCount,
-                highPriority: highPriority,
-                mediumPriority: mediumPriority,
-                lowPriority: lowPriority,
-                noPriority: noPriority,
-                withDueDate: withDueDate,
-                overdue: overdue,
-                dueSoon: dueSoon,
-                withTags: withTags,
-                allTags: allTags,
-                completedCount: completedCount,
-                deletedCount: deletedCount,
-                expiredCount: expiredCount
-            )
+            print(HTMLFormatter.formatStats(stats))
         } else {
             // Basic stats
-            output += "Your Task Summary:\n"
-            output += "═══════════════\n\n"
-            
-            output += "Overview:\n"
-            output += "  Active tasks: \(activeCount)\n"
+            print("📊 Todo Statistics:")
+            print("-------------------")
+            print("Total todos: \(stats.totalTodos)")
+            print("Active todos: \(stats.activeTodos)")
             if includeArchived {
-                output += "  Completed tasks: \(archivedCount)\n"
-                output += "  Total tasks: \(totalCount)\n"
+                print("Archived todos: \(stats.archivedTodos)")
+                print("  - Completed: \(stats.completedTodos)")
+                print("  - Deleted: \(stats.deletedTodos)")
             }
-            output += "\n"
             
-            // Priority distribution
-            output += "Task Importance:\n"
-            output += formatPriorityBar(high: highPriority, medium: mediumPriority, low: lowPriority, none: noPriority, colored: !noColor)
-            output += "  High priority: \(highPriority)\n"
-            output += "  Medium priority: \(mediumPriority)\n"
-            output += "  Low priority: \(lowPriority)\n"
-            output += "  No priority: \(noPriority)\n\n"
+            // Priority stats
+            print("\nPriority breakdown:")
+            print("  High: \(stats.highPriorityTodos)")
+            print("  Medium: \(stats.mediumPriorityTodos)")
+            print("  Low: \(stats.lowPriorityTodos)")
+            print("  None: \(stats.noPriorityTodos)")
             
-            // Due dates
-            output += "Timing:\n"
-            output += "  Tasks with due dates: \(withDueDate)\n"
-            output += "  Need attention soon: \(overdue)\n"
-            output += "  Coming up this week: \(dueSoon)\n\n"
+            // Due date stats
+            print("\nDue date stats:")
+            print("  Overdue: \(stats.overdueTodos)")
+            print("  Due today: \(stats.dueTodayTodos)")
+            print("  Due this week: \(stats.dueThisWeekTodos)")
+            print("  No due date: \(stats.noDueDateTodos)")
             
-            // Tags
-            output += "Organization:\n"
-            output += "  Tasks with tags: \(withTags)\n"
-            if tags && !allTags.isEmpty {
-                output += "  Your most used tags:\n"
-                let sortedTags = allTags.sorted { $0.value > $1.value }
-                for (tag, count) in sortedTags.prefix(5) {
-                    output += "    #\(tag): \(count)\n"
+            // Tag stats
+            if showTags {
+                print("\nTag statistics:")
+                let sortedTags = stats.tagCounts.sorted { $0.value > $1.value }
+                for (tag, count) in sortedTags {
+                    print("  #\(tag): \(count)")
                 }
-                output += "\n"
-            }
-            
-            // Archive stats
-            if includeArchived {
-                output += "Completed Tasks:\n"
-                output += "  Finished: \(completedCount)\n"
-                output += "  Removed: \(deletedCount)\n"
-                output += "  Expired: \(expiredCount)\n"
             }
         }
+    }
+}
+
+struct TodoStats {
+    var totalTodos = 0
+    var activeTodos = 0
+    var archivedTodos = 0
+    var completedTodos = 0
+    var deletedTodos = 0
+    
+    var highPriorityTodos = 0
+    var mediumPriorityTodos = 0
+    var lowPriorityTodos = 0
+    var noPriorityTodos = 0
+    
+    var overdueTodos = 0
+    var dueTodayTodos = 0
+    var dueThisWeekTodos = 0
+    var noDueDateTodos = 0
+    
+    var tagCounts: [String: Int] = [:]
+    
+    mutating func add(todos: [Todo]) {
+        activeTodos += todos.count
+        totalTodos += todos.count
         
-        if let outputFile = outputFile {
-            try output.write(to: URL(fileURLWithPath: outputFile), atomically: true, encoding: .utf8)
-            print("Output written to \(outputFile)")
-        } else {
-            print(output)
+        for todo in todos {
+            // Priority stats
+            switch todo.priority {
+            case .high: highPriorityTodos += 1
+            case .medium: mediumPriorityTodos += 1
+            case .low: lowPriorityTodos += 1
+            case .none: noPriorityTodos += 1
+            }
+            
+            // Due date stats
+            if let dueDate = todo.dueDate {
+                if todo.isOverdue {
+                    overdueTodos += 1
+                } else if Calendar.current.isDateInToday(dueDate) {
+                    dueTodayTodos += 1
+                } else if Calendar.current.isDate(dueDate, equalTo: Date(), toGranularity: .weekOfYear) {
+                    dueThisWeekTodos += 1
+                }
+            } else {
+                noDueDateTodos += 1
+            }
+            
+            // Tag stats
+            for tag in todo.tags {
+                tagCounts[tag, default: 0] += 1
+            }
         }
     }
     
-    private func formatPriorityBar(high: Int, medium: Int, low: Int, none: Int, colored: Bool) -> String {
-        let total = high + medium + low + none
-        guard total > 0 else { return "  No todos\n" }
+    mutating func add(archived: [ArchivedTodoItem]) {
+        archivedTodos += archived.count
+        totalTodos += archived.count
         
-        let width = 30
-        let highWidth = width * high / total
-        let mediumWidth = width * medium / total
-        let lowWidth = width * low / total
-        let noneWidth = width - highWidth - mediumWidth - lowWidth
-        
-        let reset = "\u{001B}[0m"
-        var bar = "  "
-        
-        if colored {
-            bar += "\u{001B}[41m" + String(repeating: "█", count: highWidth) + reset // Red for high
-            bar += "\u{001B}[43m" + String(repeating: "█", count: mediumWidth) + reset // Yellow for medium
-            bar += "\u{001B}[42m" + String(repeating: "█", count: lowWidth) + reset // Green for low
-            bar += "\u{001B}[47m" + String(repeating: "█", count: noneWidth) + reset // White for none
-        } else {
-            bar += String(repeating: "H", count: highWidth)
-            bar += String(repeating: "M", count: mediumWidth)
-            bar += String(repeating: "L", count: lowWidth)
-            bar += String(repeating: "-", count: noneWidth)
+        for item in archived {
+            switch item.reason {
+            case .completed: completedTodos += 1
+            case .deleted: deletedTodos += 1
+            case .expired: break // We don't track expired todos separately
+            }
+            
+            // Tag stats
+            for tag in item.todo.tags {
+                tagCounts[tag, default: 0] += 1
+            }
         }
-        
-        bar += "\n"
-        return bar
     }
 } 
