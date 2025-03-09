@@ -135,21 +135,25 @@ struct TodoEditor: View {
                 Label {
                     Text("Priority")
                 } icon: {
-                    Image(systemName: priority.symbol)
-                        .foregroundStyle(priority.color)
+                    Image(systemName: "flag.fill")
+                        .foregroundStyle(.blue)
                 }
                 
                 Spacer()
                 
-                Text(priority.rawValue)
-                    .foregroundStyle(.secondary)
+                HStack(spacing: 4) {
+                    Image(systemName: priority.symbol)
+                        .foregroundStyle(priority.color)
+                    Text(priority.rawValue)
+                        .foregroundStyle(.secondary)
+                }
             }
         }
         .buttonStyle(.plain)
     }
     
     private var priorityPicker: some View {
-        Picker("Priority", selection: $priority) {
+        Picker(selection: $priority) {
             ForEach([Priority.none, .low, .medium, .high], id: \.self) { priority in
                 Label {
                     Text(priority.rawValue)
@@ -158,6 +162,13 @@ struct TodoEditor: View {
                         .foregroundStyle(priority.color)
                 }
                 .tag(priority)
+            }
+        } label: {
+            Label {
+                Text("Priority")
+            } icon: {
+                Image(systemName: "flag.fill")
+                    .foregroundStyle(.blue)
             }
         }
         .pickerStyle(.inline)
