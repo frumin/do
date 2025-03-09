@@ -88,31 +88,43 @@ todo list
 
 Sort by priority:
 ```bash
+todo list -p
+# or
 todo list --by-priority
 ```
 
 Sort by due date:
 ```bash
+todo list -d
+# or
 todo list --by-due
 ```
 
 Show only high priority items:
 ```bash
+todo list -h
+# or
 todo list --high-priority
 ```
 
 Show overdue items:
 ```bash
+todo list -o
+# or
 todo list --overdue
 ```
 
 Filter by tag:
 ```bash
+todo list -t work
+# or
 todo list --tag work
 ```
 
 Disable colored output:
 ```bash
+todo list -n
+# or
 todo list --no-color
 ```
 
@@ -123,6 +135,8 @@ todo list --html
 
 Save HTML output to file:
 ```bash
+todo list -f todos.html
+# or
 todo list --output-file todos.html
 ```
 

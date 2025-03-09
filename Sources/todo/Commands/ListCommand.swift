@@ -7,10 +7,10 @@ struct ListCommand: ParsableCommand {
         abstract: "List all todo items"
     )
     
-    @Flag(name: .shortAndLong, help: "Sort by priority")
+    @Flag(name: [.customShort("p"), .long], help: "Sort by priority")
     var byPriority = false
     
-    @Flag(name: .shortAndLong, help: "Sort by due date")
+    @Flag(name: [.customShort("d"), .long], help: "Sort by due date")
     var byDue = false
     
     @Flag(name: .shortAndLong, help: "Show only high priority items")
@@ -28,7 +28,7 @@ struct ListCommand: ParsableCommand {
     @Flag(name: .shortAndLong, help: "Output as HTML")
     var html = false
     
-    @Option(name: .shortAndLong, help: "Output HTML to file")
+    @Option(name: [.customShort("f"), .long], help: "Output HTML to file")
     var outputFile: String?
     
     static func listTodos(
