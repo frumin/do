@@ -15,7 +15,7 @@ struct EditCommand: ParsableCommand {
     var title: String?
     
     @Option(name: [.customShort("p"), .long], help: "New priority (1=high, 2=medium, 3=low, 4=none)")
-    var priority: Priority?
+    var priority: String?
     
     @Option(name: [.customShort("d"), .long], help: "New due date (YYYY-MM-DD or natural language)")
     var due: String?
@@ -32,75 +32,60 @@ struct EditCommand: ParsableCommand {
     mutating func run() throws {
         var todos = try Todo.storage.readTodos()
         guard number > 0 && number <= todos.count else {
-            throw ValidationError("Todo #\(number) doesn't exist. Valid numbers are 1 to \(todos.count).")
+            throw ValidationError("Todo #\(number) not found. Available todo numbers: 1 to \(todos.count)")
         }
         
-        let oldTodo = todos[number - 1]
-        var todo = oldTodo
+        var todo = todos[number - 1]
+        let oldTodo = todo
+        var changes: [String] = []
         
-        if let title = title {
-            todo.title = title
+        if let newTitle = title {
+            todo.title = newTitle
+            changes.append("title")
         }
         
-        if let priority = priority {
-            todo.priority = priority
+        if let priorityString = priority {
+            todo.priority = Priority(rawValue: priorityString.lowercased()) ?? .none
+            changes.append("priority")
         }
         
-        if removeDue {
-            todo.dueDate = nil
-        } else if let dueString = due {
-            do {
-                todo.dueDate = try DateParser.parse(dueString)
-            } catch {
-                throw ValidationError("Invalid date format. Please use YYYY-MM-DD or natural language like 'tomorrow'.")
+        if let dueDateString = due {
+            guard let parsedDate = try DateParser.parse(dueDateString) else {
+                throw ValidationError("Invalid date format. Try using:\n• A specific date: YYYY-MM-DD\n• Natural language: \"tomorrow\", \"next monday 2pm\", \"in 2 days\"")
             }
+            todo.dueDate = parsedDate
+            changes.append("due date")
         }
         
-        if removeTags {
-            todo.tags = []
-        } else if let tagsString = tags {
-            todo.tags = tagsString.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+        if let tagString = tags {
+            todo.tags = tagString.split(separator: ",").map(String.init)
+            changes.append("tags")
+        }
+        
+        if changes.isEmpty {
+            print("\nℹ️  No changes made to todo #\(number)")
+            return
         }
         
         todos[number - 1] = todo
         try Todo.storage.writeTodos(todos)
         
-        print("\n✏️ Updated todo #\(number):")
-        print("─────────────────────")
-        if oldTodo != todo {
-            print("Before: \(oldTodo.format(index: number))")
-            print("After:  \(todo.format(index: number))")
-            
-            // Show what changed
-            var changes: [String] = []
-            if oldTodo.title != todo.title {
-                changes.append("title")
-            }
-            if oldTodo.priority != todo.priority {
-                changes.append("priority")
-            }
-            if oldTodo.dueDate != todo.dueDate {
-                changes.append("due date")
-            }
-            if oldTodo.tags != todo.tags {
-                changes.append("tags")
-            }
-            print("\nChanged: \(changes.joined(separator: ", "))")
-            
-            // Show helpful next steps
-            print("\n📝 Next steps:")
-            print("• List all todos: todo list")
-            if todo.priority == .none {
-                print("• Set priority: todo edit \(number) --priority 1")
-            }
-            if todo.dueDate == nil {
-                print("• Add due date: todo edit \(number) --due \"tomorrow 2pm\"")
-            }
-            if todo.tags.isEmpty {
-                print("• Add tags: todo edit \(number) --tags \"work,important\"")
-            }
-        } else {
-            print("No changes were made to the todo.")
+        print("\n✏️  Updated todo #\(number):")
+        print("────────────────────")
+        print("Before: \(oldTodo.format(index: number))")
+        print("After:  \(todo.format(index: number))")
+        print("\nChanged: \(changes.joined(separator: ", "))")
+        
+        print("\n💡 Quick actions:")
+        print("• View all todos: todo list")
+        if todo.priority == .none {
+            print("• Set priority: todo edit \(number) -p high")
+        }
+        if todo.dueDate == nil {
+            print("• Add due date: todo edit \(number) -d \"tomorrow 2pm\"")
+        }
+        if todo.tags.isEmpty {
+            print("• Add tags: todo edit \(number) -t \"work,important\"")
         }
     }
 } 

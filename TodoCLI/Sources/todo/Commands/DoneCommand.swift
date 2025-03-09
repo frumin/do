@@ -26,6 +26,8 @@ struct DoneCommand: ParsableCommand {
         print("\n✅ Marking as done:")
         print("────────────────")
         
+        var completedTodos: [Todo] = []
+        
         // Remove todos in descending order
         for number in sortedNumbers {
             let todo = todos[number - 1]
@@ -37,24 +39,36 @@ struct DoneCommand: ParsableCommand {
             
             // Remove from active todos
             todos.remove(at: number - 1)
+            
+            completedTodos.append(todo)
         }
         
         try Todo.storage.writeTodos(todos)
         try Todo.storage.writeArchive(archive)
         
-        // Show summary and next steps
-        if numbers.count > 1 {
-            print("\n🎉 Completed \(numbers.count) todos!")
-        } else {
-            print("\n🎉 Todo completed!")
+        if completedTodos.count > 1 {
+            print("\n✅ Completed \(completedTodos.count) todos:")
+            print("─────────────────────────")
+            for (index, todo) in completedTodos.enumerated() {
+                print(todo.format(index: index + 1))
+            }
+        } else if let todo = completedTodos.first {
+            print("\n✅ Completed todo:")
+            print("────────────────")
+            print(todo.format(index: numbers[0]))
         }
         
-        if !todos.isEmpty {
-            print("\n📝 Next steps:")
-            print("• List remaining todos: todo list")
-            print("• View todo statistics: todo stats --archived")
+        let remainingTodos = try Todo.storage.readTodos()
+        if remainingTodos.isEmpty {
+            print("\n🎯 All done! What's next?")
+            print("• Add new todo: todo add \"task name\"")
+            print("• View completed: todo archive")
+            print("• See statistics: todo stats")
         } else {
-            print("\n🎯 All done! Add a new todo with: todo add \"task name\"")
+            print("\n💡 Quick actions:")
+            print("• View remaining todos: todo list")
+            print("• View completed todos: todo archive")
+            print("• See statistics: todo stats")
         }
     }
 } 

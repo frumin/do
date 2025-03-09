@@ -95,56 +95,49 @@ struct ListCommand: ParsableCommand {
             return
         }
         
+        if todos.isEmpty {
+            print("\n📝 No todos yet!")
+            print("────────────────")
+            print("Get started with:")
+            print("• Add your first todo: todo add \"task name\"")
+            print("• Get help: todo --help")
+            return
+        }
+
+        let filteredTodos = todos
+        let filteredCount = filteredTodos.count
+        let overdueTodos = filteredTodos.filter { $0.isOverdue }.count
+        let dueTodayTodos = filteredTodos.filter { 
+            guard let dueDate = $0.dueDate else { return false }
+            return Calendar.current.isDateInToday(dueDate)
+        }.count
+        
         print("\n📝 Your todos:")
         print("─────────────")
-        if !todos.isEmpty {
-            print(Todo.format(todos, showNumbers: true))
-            
-            // Show summary
-            let filteredCount = todos.count
-            if !appliedFilters.isEmpty {
-                print("\nShowing \(filteredCount) of \(totalCount) todos (\(appliedFilters.joined(separator: ", ")))")
+        
+        print(Todo.format(filteredTodos, showNumbers: true))
+        
+        if filteredCount != totalCount {
+            print("\nℹ️  Showing \(filteredCount) of \(totalCount) todos")
+            print("   Filters: \(appliedFilters.joined(separator: ", "))")
+        }
+
+        // Only show status if we have todos
+        if !filteredTodos.isEmpty {
+            print("\n📊 Status:")
+            if overdueTodos > 0 {
+                print("• \(overdueTodos) overdue")
             }
-            
-            // Show stats
-            let overdueTodos = todos.filter { $0.isOverdue }.count
-            let dueTodayTodos = todos.filter { 
-                guard let dueDate = $0.dueDate else { return false }
-                return Calendar.current.isDateInToday(dueDate)
-            }.count
-            
-            if overdueTodos > 0 || dueTodayTodos > 0 {
-                print("\nStatus:")
-                if overdueTodos > 0 {
-                    print("• \(overdueTodos) overdue")
-                }
-                if dueTodayTodos > 0 {
-                    print("• \(dueTodayTodos) due today")
-                }
-            }
-            
-            // Show helpful tips
-            print("\n💡 Tips:")
-            print("• Add a new todo: todo add \"task name\"")
-            print("• Mark as done: todo done <number>")
-            if !byPriority && todos.count > 1 {
-                print("• Sort by priority: todo list --by-priority")
-            }
-            if !byDate && todos.count > 1 {
-                print("• Sort by due date: todo list --by-date")
-            }
-        } else {
-            if totalCount == 0 {
-                print("No todos yet! Add one with: todo add \"task name\"")
-            } else {
-                print("No matching todos found.")
-                if !appliedFilters.isEmpty {
-                    print("Filters applied: \(appliedFilters.joined(separator: ", "))")
-                }
-                print("\nTry:")
-                print("• List all todos: todo list")
-                print("• Add a new todo: todo add \"task name\"")
+            if dueTodayTodos > 0 {
+                print("• \(dueTodayTodos) due today")
             }
         }
+
+        print("\n💡 Quick tips:")
+        print("• Add todo: todo add \"task name\"")
+        print("• Complete todo: todo done <number>")
+        print("• Sort by priority: todo list --by-priority")
+        print("• Sort by due date: todo list --by-date")
+        print("• View all commands: todo --help")
     }
 } 

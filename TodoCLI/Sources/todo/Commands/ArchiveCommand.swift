@@ -47,31 +47,43 @@ struct ArchiveCommand: ParsableCommand {
         
         // Apply sorting
         if byPriority {
-            archive.sort { $0.todo.priority.rawValue < $1.todo.priority.rawValue }
+            archive.sort { $0.todo.priority.sortValue < $1.todo.priority.sortValue }
         } else if byDate {
             archive.sort { $0.archivedAt > $1.archivedAt }
         }
         
-        // Output
         if archive.isEmpty {
-            print("No archived todos found")
+            print("\n📂 Archive is empty")
+            print("─────────────────")
+            print("Complete or remove todos to see them here.")
+            print("\n💡 Quick actions:")
+            print("• View active todos: todo list")
+            print("• Add new todo: todo add \"task name\"")
             return
         }
-        
+
         if html {
             print(HTMLFormatter.format(archive.map { $0.todo }))
-        } else {
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateStyle = .short
-            dateFormatter.timeStyle = .none
-            
-            for (index, item) in archive.enumerated() {
-                let reset = noColor ? "" : "\u{001B}[0m"
-                let gray = noColor ? "" : "\u{001B}[90m"
-                
-                print("\(gray)[\(item.reason.rawValue.uppercased())] \(item.todo.format(index: index + 1))")
-                print("  Archived: \(dateFormatter.string(from: item.archivedAt))\(reset)")
-            }
+            return
         }
+
+        print("\n📂 Archived todos:")
+        print("────────────────")
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = .medium
+        dateFormatter.timeStyle = .short
+        
+        for (index, item) in archive.enumerated() {
+            let gray = noColor ? "" : "\u{001B}[90m"
+            let reset = noColor ? "" : "\u{001B}[0m"
+            print("\(gray)[\(item.reason.rawValue.uppercased())] \(item.todo.format(index: index + 1))")
+            print("  Archived: \(dateFormatter.string(from: item.archivedAt))\(reset)")
+        }
+
+        print("\n💡 Quick actions:")
+        print("• View active todos: todo list")
+        print("• Add new todo: todo add \"task name\"")
+        print("• See statistics: todo stats")
     }
 } 

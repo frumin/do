@@ -27,12 +27,11 @@ struct AddCommand: ParsableCommand {
             todo.priority = priority
         }
         
-        if let dueString = due {
-            do {
-                todo.dueDate = try DateParser.parse(dueString)
-            } catch {
-                throw ValidationError("Invalid date format. Please use YYYY-MM-DD or natural language like 'tomorrow'.")
+        if let dueDateString = due {
+            guard let parsedDate = try DateParser.parse(dueDateString) else {
+                throw ValidationError("Invalid date format. Try using:\n• A specific date: YYYY-MM-DD\n• Natural language: \"tomorrow\", \"next monday 2pm\", \"in 2 days\"")
             }
+            todo.dueDate = parsedDate
         }
         
         if let tagsString = tags {
@@ -41,21 +40,20 @@ struct AddCommand: ParsableCommand {
         
         try Todo.storage.addTodo(todo)
         let todos = try Todo.storage.readTodos()
-        print("\n✨ Added new todo:")
-        print("─────────────────")
+        print("\n✨ Added todo #\(todos.count):")
+        print("───────────────────")
         print(todo.format(index: todos.count))
         
-        // Show helpful next steps
-        print("\n📝 Next steps:")
-        print("• List all todos: todo list")
-        if todo.priority == .none {
-            print("• Set priority: todo edit \(todos.count) --priority 1")
+        print("\n💡 Quick actions:")
+        print("• View all todos: todo list")
+        if priority == nil {
+            print("• Set priority: todo edit \(todos.count) -p high")
         }
-        if todo.dueDate == nil {
-            print("• Add due date: todo edit \(todos.count) --due \"tomorrow 2pm\"")
+        if due == nil {
+            print("• Add due date: todo edit \(todos.count) -d \"tomorrow 2pm\"")
         }
-        if todo.tags.isEmpty {
-            print("• Add tags: todo edit \(todos.count) --tags \"work,important\"")
+        if tags?.isEmpty != false {
+            print("• Add tags: todo edit \(todos.count) -t \"work,important\"")
         }
     }
 } 

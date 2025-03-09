@@ -26,6 +26,8 @@ struct RemoveCommand: ParsableCommand {
         print("\n🗑️ Removing todos:")
         print("───────────────")
         
+        var removedTodos: [Todo] = []
+        
         // Remove todos in descending order
         for number in sortedNumbers {
             let todo = todos[number - 1]
@@ -37,24 +39,35 @@ struct RemoveCommand: ParsableCommand {
             
             // Remove from active todos
             todos.remove(at: number - 1)
+            removedTodos.append(todo)
         }
         
         try Todo.storage.writeTodos(todos)
         try Todo.storage.writeArchive(archive)
         
-        // Show summary and next steps
-        if numbers.count > 1 {
-            print("\n🗑️ Removed \(numbers.count) todos.")
-        } else {
-            print("\n🗑️ Todo removed.")
+        if removedTodos.count > 1 {
+            print("\n🗑️  Removed \(removedTodos.count) todos:")
+            print("────────────────────────")
+            for (index, todo) in removedTodos.enumerated() {
+                print(todo.format(index: index + 1))
+            }
+        } else if let todo = removedTodos.first {
+            print("\n🗑️  Removed todo:")
+            print("───────────────")
+            print(todo.format(index: numbers[0]))
         }
         
-        if !todos.isEmpty {
-            print("\n📝 Next steps:")
-            print("• List remaining todos: todo list")
-            print("• View todo statistics: todo stats --archived")
+        let remainingTodos = try Todo.storage.readTodos()
+        if remainingTodos.isEmpty {
+            print("\n📝 No todos left. What's next?")
+            print("• Add new todo: todo add \"task name\"")
+            print("• View removed: todo archive")
+            print("• See statistics: todo stats")
         } else {
-            print("\n📝 All todos removed. Add a new one with: todo add \"task name\"")
+            print("\n💡 Quick actions:")
+            print("• View remaining todos: todo list")
+            print("• View removed todos: todo archive")
+            print("• See statistics: todo stats")
         }
     }
 } 
