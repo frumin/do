@@ -10,25 +10,62 @@ struct ListCommand: ParsableCommand {
     @Flag(name: .shortAndLong, help: "Sort by priority")
     var byPriority = false
     
+    @Flag(name: .shortAndLong, help: "Sort by due date")
+    var byDue = false
+    
     @Flag(name: .shortAndLong, help: "Show only high priority items")
     var highPriority = false
+    
+    @Flag(name: .shortAndLong, help: "Show only overdue items")
+    var overdue = false
+    
+    @Option(name: .shortAndLong, help: "Filter by tag")
+    var tag: String?
     
     @Flag(name: .shortAndLong, help: "Disable colored output")
     var noColor = false
     
-    static func listTodos(to output: inout some TextOutputStream, todos: [TodoItem], byPriority: Bool = false, highPriorityOnly: Bool = false, colored: Bool = true) throws {
+    static func listTodos(
+        to output: inout some TextOutputStream,
+        todos: [TodoItem],
+        byPriority: Bool = false,
+        byDue: Bool = false,
+        highPriorityOnly: Bool = false,
+        overdueOnly: Bool = false,
+        tag: String? = nil,
+        colored: Bool = true
+    ) throws {
         var displayTodos = todos
         
+        // Apply filters
         if highPriorityOnly {
-            displayTodos = todos.filter { $0.priority == .high }
+            displayTodos = displayTodos.filter { $0.priority == .high }
         }
         
+        if overdueOnly {
+            displayTodos = displayTodos.filter { $0.isOverdue }
+        }
+        
+        if let tag = tag {
+            displayTodos = displayTodos.filter { $0.tags.contains(tag) }
+        }
+        
+        // Apply sorting
         if byPriority {
             displayTodos.sort { $0.priority < $1.priority }
+        } else if byDue {
+            displayTodos.sort { lhs, rhs in
+                switch (lhs.dueDate, rhs.dueDate) {
+                case (nil, nil): return false
+                case (nil, _): return false
+                case (_, nil): return true
+                case (let lhsDate?, let rhsDate?): return lhsDate < rhsDate
+                }
+            }
         }
         
         if displayTodos.isEmpty {
-            print("No todos yet!", to: &output)
+            print("No todos found!", to: &output)
             return
         }
         
@@ -44,7 +81,10 @@ struct ListCommand: ParsableCommand {
             to: &stdout,
             todos: todos,
             byPriority: byPriority,
+            byDue: byDue,
             highPriorityOnly: highPriority,
+            overdueOnly: overdue,
+            tag: tag,
             colored: !noColor
         )
     }

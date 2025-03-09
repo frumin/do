@@ -34,16 +34,41 @@ struct TodoItem: Codable {
     let title: String
     var priority: Priority
     let createdAt: Date
+    var dueDate: Date?
+    var tags: Set<String>
     
-    init(title: String, priority: Priority = .none) {
+    init(title: String, priority: Priority = .none, dueDate: Date? = nil, tags: Set<String> = []) {
         self.title = title
         self.priority = priority
         self.createdAt = Date()
+        self.dueDate = dueDate
+        self.tags = tags
+    }
+    
+    var isOverdue: Bool {
+        guard let dueDate = dueDate else { return false }
+        return Date() > dueDate
     }
     
     func format(index: Int, colored: Bool = true) -> String {
         let reset = "\u{001B}[0m"
         let priorityText = colored ? "\(priority.color)\(priority.symbol)\(reset)" : priority.symbol
-        return "\(index). \(priorityText) \(title)"
+        
+        var result = "\(index). \(priorityText) \(title)"
+        
+        if let dueDate = dueDate {
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateStyle = .short
+            let dueDateColor = colored ? (isOverdue ? "\u{001B}[31m" : "\u{001B}[36m") : ""
+            result += " \(dueDateColor)📅 \(dateFormatter.string(from: dueDate))\(colored ? reset : "")"
+        }
+        
+        if !tags.isEmpty {
+            let tagsColor = colored ? "\u{001B}[35m" : ""
+            let tagsList = tags.map { "#\($0)" }.joined(separator: " ")
+            result += " \(tagsColor)\(tagsList)\(colored ? reset : "")"
+        }
+        
+        return result
     }
 } 
