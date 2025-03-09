@@ -1,98 +1,62 @@
-import ArgumentParser
 import Foundation
+import ArgumentParser
+import TodoKit
 
 struct EditCommand: ParsableCommand {
     static var configuration = CommandConfiguration(
         commandName: "edit",
-        abstract: "Update one of your tasks ✏️"
+        abstract: "Edit a todo ✏️"
     )
     
-    @Argument(help: "Which task would you like to update? (enter its number)")
+    @Argument(help: "The number of the todo to edit")
     var number: Int
     
-    @Option(name: .shortAndLong, help: "Change what the task says")
-    var text: String?
+    @Option(name: .shortAndLong, help: "New title")
+    var title: String?
     
-    @Option(name: .shortAndLong, help: "Change how important this task is (high/medium/low)")
-    var priority: String?
+    @Option(name: .shortAndLong, help: "New priority (high, medium, low)")
+    var priority: Todo.Priority?
     
-    @Option(name: .shortAndLong, help: """
-        Change when it's due. You can use:
-        - Calendar dates (YYYY-MM-DD)
-        - Natural phrases ('tomorrow', 'next monday')
-        - Relative times ('in 2 weeks', 'in 3 days')
-        - 'none' to remove the due date
-        """)
+    @Option(name: .shortAndLong, help: "New due date (YYYY-MM-DD or natural language)")
     var due: String?
     
-    @Option(name: .shortAndLong, help: "Update task tags (comma-separated, use 'none' to remove all tags)")
+    @Option(name: .shortAndLong, help: "New tags (comma-separated)")
     var tags: String?
     
-    func run() throws {
+    @Flag(name: .shortAndLong, help: "Remove due date")
+    var removeDue = false
+    
+    @Flag(name: .shortAndLong, help: "Remove tags")
+    var removeTags = false
+    
+    mutating func run() throws {
         var todos = try Todo.storage.readTodos()
         guard number > 0 && number <= todos.count else {
-            throw ValidationError("Oops! That task number doesn't exist. Try 'todo list' to see your tasks and their numbers 🔍")
+            throw ValidationError("Invalid todo number. Please use a number between 1 and \(todos.count).")
         }
         
         let oldTodo = todos[number - 1]
         
-        // Process new values
-        let newPriority: Priority?
-        if let priorityStr = priority?.lowercased() {
-            if let p = Priority(rawValue: priorityStr) {
-                newPriority = p
-            } else {
-                throw ValidationError("""
-                    I don't recognize that priority level 🤔
-                    You can use: 'high', 'medium', or 'low'
-                    """)
-            }
-        } else {
-            newPriority = nil
+        let dueDate = try due.flatMap { input in
+            try DateParser.parse(input)
         }
         
-        let newDueDate: Date?
-        if let due = due {
-            if due.lowercased() == "none" {
-                newDueDate = nil
-            } else {
-                newDueDate = try DateParser.parse(due)
-            }
-        } else {
-            newDueDate = nil
-        }
+        let tagList = tags?.split(separator: ",").map(String.init)
         
-        let newTags: Set<String>?
-        if let tags = tags {
-            if tags.lowercased() == "none" {
-                newTags = []
-            } else {
-                newTags = Set(tags.split(separator: ",").map(String.init))
-            }
-        } else {
-            newTags = nil
-        }
-        
-        // Create updated todo
-        let newTodo = TodoItem(
-            existing: oldTodo,
-            title: text,
-            priority: newPriority,
-            dueDate: due != nil ? newDueDate : oldTodo.dueDate,
-            tags: newTags
+        let newTodo = Todo(
+            id: oldTodo.id,
+            title: title ?? oldTodo.title,
+            priority: priority ?? oldTodo.priority,
+            dueDate: removeDue ? nil : (dueDate ?? oldTodo.dueDate),
+            tags: removeTags ? [] : (tagList ?? oldTodo.tags),
+            createdAt: oldTodo.createdAt
         )
-        
-        if newTodo.title == oldTodo.title &&
-           newTodo.priority == oldTodo.priority &&
-           newTodo.dueDate == oldTodo.dueDate &&
-           newTodo.tags == oldTodo.tags {
-            print("No changes made. Try --help to see what you can change!")
-            return
-        }
         
         todos[number - 1] = newTodo
         try Todo.storage.writeTodos(todos)
-        print("✏️ Task updated:")
-        print(newTodo.format(index: number))
+        
+        print("✏️ Updated todo:")
+        print("Before: \(oldTodo.format(index: number))")
+        print("After:  \(newTodo.format(index: number))")
     }
 } 

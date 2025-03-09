@@ -1,5 +1,6 @@
 import ArgumentParser
 import Foundation
+import TodoKit
 
 struct StatsCommand: ParsableCommand {
     static var configuration = CommandConfiguration(
@@ -55,9 +56,9 @@ struct StatsCommand: ParsableCommand {
         }
         
         // Archive stats
-        let completedCount = archived.filter { $0.reason == .completed }.count
-        let deletedCount = archived.filter { $0.reason == .deleted }.count
-        let expiredCount = archived.filter { $0.reason == .expired }.count
+        let completedCount = archived.filter { $0.reason == ArchiveReason.completed }.count
+        let deletedCount = archived.filter { $0.reason == ArchiveReason.deleted }.count
+        let expiredCount = archived.filter { $0.reason == ArchiveReason.expired }.count
         
         if html {
             output = HTMLFormatter.formatStats(

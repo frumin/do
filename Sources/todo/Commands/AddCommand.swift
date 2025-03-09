@@ -1,59 +1,44 @@
-import ArgumentParser
 import Foundation
+import ArgumentParser
+import TodoKit
 
 struct AddCommand: ParsableCommand {
     static var configuration = CommandConfiguration(
         commandName: "add",
-        abstract: "Add a new task to your list ✨"
+        abstract: "Add a new todo ✨"
     )
     
-    @Argument(help: "What would you like to add to your list?")
-    var item: [String]
+    @Argument(help: "The todo title")
+    var title: String
     
-    @Option(name: .shortAndLong, help: "How important is this task? (high/medium/low)")
-    var priority: String?
+    @Option(name: .shortAndLong, help: "Set priority (high, medium, low)")
+    var priority: Todo.Priority = .none
     
-    @Option(name: .shortAndLong, help: """
-        When should this be done? You can use:
-        - Calendar dates (YYYY-MM-DD)
-        - Natural phrases ('tomorrow', 'next monday')
-        - Relative times ('in 2 weeks', 'in 3 days')
-        """)
+    @Option(name: .shortAndLong, help: "Set due date (YYYY-MM-DD or natural language)")
     var due: String?
     
-    @Option(name: .shortAndLong, help: "Add some tags to organize your task (comma-separated)")
+    @Option(name: .shortAndLong, help: "Add tags (comma-separated)")
     var tags: String?
     
-    func run() throws {
-        var todos = try Todo.storage.readTodos()
-        
-        let priority: Priority
-        if let priorityStr = self.priority?.lowercased() {
-            if let p = Priority(rawValue: priorityStr) {
-                priority = p
-            } else {
-                throw ValidationError("""
-                    I don't recognize that priority level 🤔
-                    You can use: 'high', 'medium', or 'low'
-                    """)
-            }
-        } else {
-            priority = .none
+    mutating func run() throws {
+        let dueDate = try due.flatMap { input in
+            try DateParser.parse(input)
         }
         
-        let dueDate = try due.map { try DateParser.parse($0) }
-        let tags = Set(tags?.split(separator: ",").map(String.init) ?? [])
+        let tagList = tags?.split(separator: ",").map(String.init) ?? []
         
-        let newTodo = TodoItem(
-            title: item.joined(separator: " "),
+        let todo = Todo(
+            title: title,
             priority: priority,
             dueDate: dueDate,
-            tags: tags
+            tags: tagList
         )
         
-        todos.append(newTodo)
+        var todos = try Todo.storage.readTodos()
+        todos.append(todo)
         try Todo.storage.writeTodos(todos)
-        print("✨ Added to your list:")
-        print(newTodo.format(index: todos.count))
+        
+        print("✨ Added todo:")
+        print(todo.format(index: nil))
     }
 } 

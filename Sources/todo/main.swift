@@ -3,24 +3,20 @@
 
 import ArgumentParser
 import Foundation
+import TodoKit
 
-struct Todo: ParsableCommand {
+struct TodoCommand: ParsableCommand {
     static var configuration = CommandConfiguration(
         commandName: "todo",
-        abstract: "Your friendly task manager for the command line 🌟",
+        abstract: "A simple command-line todo app 📝",
         subcommands: [
             AddCommand.self,
             ListCommand.self,
-            EditCommand.self,
             DoneCommand.self,
             RemoveCommand.self,
-            ArchiveCommand.self,
-            StatsCommand.self,
-            CompletionCommand.self
+            EditCommand.self
         ]
     )
-    
-    static var storage = TodoStorage()
 }
 
-Todo.main()
+TodoCommand.main()

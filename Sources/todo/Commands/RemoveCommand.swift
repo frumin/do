@@ -1,49 +1,41 @@
-import ArgumentParser
 import Foundation
+import ArgumentParser
+import TodoKit
 
 struct RemoveCommand: ParsableCommand {
     static var configuration = CommandConfiguration(
         commandName: "remove",
-        abstract: "Remove tasks from your list 🗑️"
+        abstract: "Remove todos from your list 🗑️"
     )
     
-    @Argument(parsing: .remaining, help: "Which tasks would you like to remove? (enter their numbers, space-separated)")
-    private var numberStrings: [String]
+    @Argument(help: "The numbers of the todos to remove")
+    var numbers: [Int]
     
-    var numbers: [Int] {
-        numberStrings.compactMap { Int($0) }
-    }
-    
-    func run() throws {
-        guard !numbers.isEmpty else {
-            throw ValidationError("Please specify which tasks to remove (enter their numbers)")
-        }
-        
-        // Check if any numbers couldn't be parsed
-        if numbers.count != numberStrings.count {
-            throw ValidationError("Please enter valid task numbers")
-        }
-        
+    mutating func run() throws {
         let todos = try Todo.storage.readTodos()
         
-        // Validate all numbers first
-        for number in numbers {
-            guard number > 0 && number <= todos.count else {
-                throw ValidationError("Oops! Task #\(number) doesn't exist. Try 'todo list' to see your tasks and their numbers 🔍")
-            }
+        // Validate numbers
+        guard !numbers.isEmpty else {
+            throw ValidationError("Please specify which todos to remove.")
         }
         
-        // Sort in reverse order to handle indices correctly
-        let sortedNumbers = numbers.sorted(by: >)
+        let sortedNumbers = numbers.sorted()
+        guard let maxNumber = sortedNumbers.last, maxNumber <= todos.count else {
+            throw ValidationError("Invalid todo number. Please use numbers between 1 and \(todos.count).")
+        }
         
-        // Remove each task
+        guard let minNumber = sortedNumbers.first, minNumber > 0 else {
+            throw ValidationError("Todo numbers must be greater than 0.")
+        }
+        
+        // Remove todos
         if sortedNumbers.count == 1 {
             let todo = todos[sortedNumbers[0] - 1]
             try Todo.storage.archiveTodo(todo, reason: .deleted)
             print("🗑️ Task removed:")
             print(todo.format(index: sortedNumbers[0]))
         } else {
-            print("🗑️ Removed \(sortedNumbers.count) tasks:")
+            print("🗑️ Tasks removed:")
             for number in sortedNumbers {
                 let todo = todos[number - 1]
                 try Todo.storage.archiveTodo(todo, reason: .deleted)

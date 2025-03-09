@@ -1,78 +1,76 @@
 import ArgumentParser
 import Foundation
+import TodoKit
 
 struct ArchiveCommand: ParsableCommand {
     static var configuration = CommandConfiguration(
         commandName: "archive",
-        abstract: "Look back at your completed tasks 📚"
+        abstract: "View archived todos 📦"
     )
     
-    @Flag(name: [.customShort("p"), .long], help: "Arrange tasks by importance")
+    @Flag(name: .shortAndLong, help: "Sort by priority")
     var byPriority = false
     
-    @Flag(name: [.customShort("d"), .long], help: "Arrange tasks by when they were completed")
+    @Flag(name: .shortAndLong, help: "Sort by archive date")
     var byDate = false
     
-    @Option(name: .shortAndLong, help: "Show tasks with a specific tag")
-    var tag: String?
+    @Flag(name: .shortAndLong, help: "Show completed tasks only")
+    var completed = false
     
-    @Option(name: .shortAndLong, help: "Show tasks by how they were archived (completed/deleted/expired)")
-    var reason: String?
+    @Flag(name: .shortAndLong, help: "Show deleted tasks only")
+    var deleted = false
     
-    @Flag(name: .shortAndLong, help: "Turn off colorful output")
-    var noColor = false
+    @Flag(name: .shortAndLong, help: "Show expired tasks only")
+    var expired = false
     
-    @Flag(name: .shortAndLong, help: "Create a pretty web page of your archived tasks")
+    @Flag(name: .shortAndLong, help: "Output in HTML format")
     var html = false
     
-    @Option(name: [.customShort("f"), .long], help: "Save the web page to a file")
-    var outputFile: String?
+    @Flag(name: .shortAndLong, help: "Don't use colors in output")
+    var noColor = false
     
-    func run() throws {
+    mutating func run() throws {
         var archive = try Todo.storage.readArchive()
         
         // Apply filters
-        if let tag = tag {
-            archive = archive.filter { $0.todo.tags.contains(tag) }
+        if completed {
+            archive = archive.filter { $0.reason == .completed }
         }
         
-        if let reason = reason {
-            guard let archiveReason = ArchiveReason(rawValue: reason.lowercased()) else {
-                throw ValidationError("I don't recognize that archive reason. You can use: 'completed', 'deleted', or 'expired' 🤔")
-            }
-            archive = archive.filter { $0.reason == archiveReason }
+        if deleted {
+            archive = archive.filter { $0.reason == .deleted }
+        }
+        
+        if expired {
+            archive = archive.filter { $0.reason == .expired }
         }
         
         // Apply sorting
         if byPriority {
-            archive.sort { $0.todo.priority < $1.todo.priority }
+            archive.sort { $0.todo.priority.rawValue < $1.todo.priority.rawValue }
         } else if byDate {
             archive.sort { $0.archivedAt > $1.archivedAt }
         }
         
+        // Output
         if archive.isEmpty {
-            print("No completed tasks yet! Keep going, you'll get there! 💪")
+            print("No archived todos found")
             return
         }
         
-        if let outputFile = outputFile {
-            var fileOutput = ""
-            if html {
-                fileOutput = HTMLFormatter.formatArchive(archive)
-            } else {
-                for (index, todo) in archive.enumerated() {
-                    fileOutput += todo.format(index: index + 1, colored: false) + "\n"
-                }
-            }
-            try fileOutput.write(to: URL(fileURLWithPath: outputFile), atomically: true, encoding: .utf8)
-            print("Output written to \(outputFile)")
+        if html {
+            print(HTMLFormatter.format(archive.map { $0.todo }))
         } else {
-            if html {
-                print(HTMLFormatter.formatArchive(archive))
-            } else {
-                for (index, todo) in archive.enumerated() {
-                    print(todo.format(index: index + 1, colored: !noColor))
-                }
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateStyle = .short
+            dateFormatter.timeStyle = .none
+            
+            for (index, item) in archive.enumerated() {
+                let reset = noColor ? "" : "\u{001B}[0m"
+                let gray = noColor ? "" : "\u{001B}[90m"
+                
+                print("\(gray)[\(item.reason.rawValue.uppercased())] \(item.todo.format(index: index + 1))")
+                print("  Archived: \(dateFormatter.string(from: item.archivedAt))\(reset)")
             }
         }
     }

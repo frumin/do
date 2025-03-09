@@ -1,186 +1,90 @@
 import Foundation
+import TodoKit
 
 struct HTMLFormatter {
-    static func format(_ todos: [TodoItem]) -> String {
+    static func format(_ todos: [Todo]) -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateStyle = .medium
+        dateFormatter.timeStyle = .none
         
-        let html = """
+        var html = """
         <!DOCTYPE html>
         <html>
         <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <meta charset="utf-8">
             <title>Todo List</title>
             <style>
                 body {
-                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
                     max-width: 800px;
-                    margin: 2rem auto;
-                    padding: 0 1rem;
-                    background: #f5f5f5;
+                    margin: 0 auto;
+                    padding: 20px;
                 }
-                .todo-list, .stats-container {
-                    background: white;
-                    border-radius: 8px;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                    overflow: hidden;
+                .todo {
+                    margin-bottom: 10px;
+                    padding: 10px;
+                    border-radius: 5px;
+                    background-color: #f5f5f5;
                 }
-                .todo-item {
-                    padding: 1rem;
-                    border-bottom: 1px solid #eee;
-                    display: flex;
-                    align-items: center;
-                    gap: 0.5rem;
+                .todo.high {
+                    border-left: 5px solid #ff4444;
                 }
-                .todo-item:last-child {
-                    border-bottom: none;
+                .todo.medium {
+                    border-left: 5px solid #ffbb33;
                 }
-                .priority {
-                    font-size: 1.2rem;
-                    width: 24px;
+                .todo.low {
+                    border-left: 5px solid #00C851;
                 }
-                .priority-high { color: #dc3545; }
-                .priority-medium { color: #ffc107; }
-                .priority-low { color: #28a745; }
-                .title {
-                    flex: 1;
-                    font-size: 1rem;
+                .todo.none {
+                    border-left: 5px solid #999999;
                 }
-                .due-date {
-                    color: #0d6efd;
-                    font-size: 0.9rem;
+                .todo-title {
+                    font-weight: bold;
+                    margin-bottom: 5px;
                 }
-                .due-date.overdue {
-                    color: #dc3545;
+                .todo-due {
+                    color: #666;
+                    font-size: 0.9em;
                 }
-                .tags {
-                    display: flex;
-                    gap: 0.5rem;
-                    flex-wrap: wrap;
-                }
-                .tag {
-                    background: #e9ecef;
-                    color: #495057;
-                    padding: 0.2rem 0.5rem;
-                    border-radius: 4px;
-                    font-size: 0.8rem;
-                }
-                .archive-reason {
-                    font-size: 0.8rem;
-                    color: #6c757d;
-                }
-                .archive-date {
-                    font-size: 0.8rem;
-                    color: #6c757d;
-                }
-                h1 {
-                    color: #212529;
-                    margin-bottom: 1.5rem;
-                }
-                .stats-section {
-                    padding: 1rem;
-                    border-bottom: 1px solid #eee;
-                }
-                .stats-section:last-child {
-                    border-bottom: none;
-                }
-                .stats-section h2 {
-                    margin: 0 0 1rem 0;
-                    font-size: 1.2rem;
-                    color: #212529;
-                }
-                .progress-bar {
-                    height: 24px;
-                    background: #e9ecef;
-                    border-radius: 4px;
-                    overflow: hidden;
-                    margin: 0.5rem 0;
-                }
-                .progress-segment {
-                    height: 100%;
-                    float: left;
-                }
-                .progress-high { background: #dc3545; }
-                .progress-medium { background: #ffc107; }
-                .progress-low { background: #28a745; }
-                .progress-none { background: #6c757d; }
-                .stat-row {
-                    display: flex;
-                    justify-content: space-between;
-                    margin: 0.25rem 0;
-                }
-                .tag-cloud {
-                    display: flex;
-                    flex-wrap: wrap;
-                    gap: 0.5rem;
-                    margin-top: 0.5rem;
-                }
-                .tag-stat {
-                    background: #e9ecef;
-                    color: #495057;
-                    padding: 0.2rem 0.5rem;
-                    border-radius: 4px;
-                    font-size: 0.9rem;
-                    display: flex;
-                    align-items: center;
-                    gap: 0.5rem;
-                }
-                .tag-count {
-                    background: #dee2e6;
-                    color: #495057;
-                    padding: 0.1rem 0.4rem;
-                    border-radius: 3px;
-                    font-size: 0.8rem;
+                .todo-tags {
+                    color: #666;
+                    font-size: 0.9em;
+                    margin-top: 5px;
                 }
             </style>
         </head>
         <body>
-            <h1>Todo List</h1>
-            <div class="todo-list">
+        <h1>Todo List</h1>
         """
         
-        let todoItems = todos.enumerated().map { (index, todo) -> String in
-            let priorityClass = switch todo.priority {
-                case .high: "priority-high"
-                case .medium: "priority-medium"
-                case .low: "priority-low"
-                case .none: ""
-            }
+        for (index, todo) in todos.enumerated() {
+            let priorityClass = todo.priority.rawValue
+            html += """
+            <div class="todo \(priorityClass)">
+                <div class="todo-title">\(index + 1). \(todo.priority.symbol) \(todo.title)</div>
+            """
             
-            let prioritySymbol = todo.priority.symbol
-            
-            var dueDateHtml = ""
             if let dueDate = todo.dueDate {
-                let isOverdue = todo.isOverdue
-                dueDateHtml = """
-                    <span class="due-date\(isOverdue ? " overdue" : "")">
-                        📅 \(dateFormatter.string(from: dueDate))
-                    </span>
+                html += """
+                <div class="todo-due">Due: \(dateFormatter.string(from: dueDate))</div>
                 """
             }
             
-            let tagsHtml = todo.tags.isEmpty ? "" : """
-                <div class="tags">
-                    \(todo.tags.map { "<span class=\"tag\">#\($0)</span>" }.joined())
-                </div>
-            """
+            if !todo.tags.isEmpty {
+                html += """
+                <div class="todo-tags">\(todo.formattedTags)</div>
+                """
+            }
             
-            return """
-                <div class="todo-item">
-                    <span class="priority \(priorityClass)">\(prioritySymbol)</span>
-                    <span class="title">\(todo.title)</span>
-                    \(dueDateHtml)
-                    \(tagsHtml)
-                </div>
-            """
-        }.joined(separator: "\n")
+            html += "</div>\n"
+        }
         
-        return html + todoItems + """
-            </div>
+        html += """
         </body>
         </html>
         """
+        
+        return html
     }
     
     static func formatArchive(_ archive: [ArchivedTodoItem]) -> String {

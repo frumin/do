@@ -1,55 +1,46 @@
-import ArgumentParser
 import Foundation
+import ArgumentParser
+import TodoKit
 
 struct DoneCommand: ParsableCommand {
     static var configuration = CommandConfiguration(
         commandName: "done",
-        abstract: "Celebrate completing tasks! 🎉"
+        abstract: "Mark todos as done ✅"
     )
     
-    @Argument(parsing: .remaining, help: "Which tasks did you complete? (enter their numbers, space-separated)")
-    private var numberStrings: [String]
+    @Argument(help: "The numbers of the todos to mark as done")
+    var numbers: [Int]
     
-    var numbers: [Int] {
-        numberStrings.compactMap { Int($0) }
-    }
-    
-    func run() throws {
-        guard !numbers.isEmpty else {
-            throw ValidationError("Please specify which tasks you completed (enter their numbers)")
-        }
-        
-        // Check if any numbers couldn't be parsed
-        if numbers.count != numberStrings.count {
-            throw ValidationError("Please enter valid task numbers")
-        }
-        
+    mutating func run() throws {
         let todos = try Todo.storage.readTodos()
         
-        // Validate all numbers first
-        for number in numbers {
-            guard number > 0 && number <= todos.count else {
-                throw ValidationError("Oops! Task #\(number) doesn't exist. Try 'todo list' to see your tasks and their numbers 🔍")
-            }
+        // Validate numbers
+        guard !numbers.isEmpty else {
+            throw ValidationError("Please specify which todos to mark as done.")
         }
         
-        // Sort in reverse order to handle indices correctly
-        let sortedNumbers = numbers.sorted(by: >)
+        let sortedNumbers = numbers.sorted()
+        guard let maxNumber = sortedNumbers.last, maxNumber <= todos.count else {
+            throw ValidationError("Invalid todo number. Please use numbers between 1 and \(todos.count).")
+        }
         
-        // Mark each task as done
+        guard let minNumber = sortedNumbers.first, minNumber > 0 else {
+            throw ValidationError("Todo numbers must be greater than 0.")
+        }
+        
+        // Mark todos as done
         if sortedNumbers.count == 1 {
             let todo = todos[sortedNumbers[0] - 1]
             try Todo.storage.archiveTodo(todo, reason: .completed)
-            print("🎉 Great job! Task completed:")
+            print("✅ Marked as done:")
             print(todo.format(index: sortedNumbers[0]))
         } else {
-            print("🎉 Wow! You completed \(sortedNumbers.count) tasks:")
+            print("✅ Marked as done:")
             for number in sortedNumbers {
                 let todo = todos[number - 1]
                 try Todo.storage.archiveTodo(todo, reason: .completed)
                 print(todo.format(index: number))
             }
-            print("\n💪 Keep up the great work!")
         }
     }
 } 
