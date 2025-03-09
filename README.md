@@ -8,6 +8,7 @@ A simple, Unix-style command-line todo application written in Swift. Following U
 - Stores todos in `~/.todo.json` (JSON format)
 - Priority levels (high/medium/low) with color coding
 - Due dates with overdue detection
+- Natural language date parsing
 - Tags support with filtering
 - Flexible sorting and filtering options
 - Color-coded output
@@ -152,11 +153,40 @@ Remove a todo:
 todo remove 1
 ```
 
+Edit a todo's text:
+```bash
+todo edit 1 --text "Updated text"
+```
+
+Change priority:
+```bash
+todo edit 1 --priority high
+```
+
+Update due date (supports natural language):
+```bash
+todo edit 1 --due "next monday"
+todo edit 1 --due "in 2 weeks"
+todo edit 1 --due 2024-03-15
+todo edit 1 --due none  # Remove due date
+```
+
+Update tags:
+```bash
+todo edit 1 --tags "work,important"
+todo edit 1 --tags none  # Remove all tags
+```
+
+Multiple changes at once:
+```bash
+todo edit 1 --text "Important meeting" --priority high --due tomorrow --tags "work,meeting"
+```
+
 ## Output Format
 
 Todos are displayed with various indicators:
 - Priority levels: ⚡(high), ●(medium), ○(low)
-- Due dates: 📅 with date
+- Due dates: 📅 with date (red if overdue)
 - Tags: #tag-name
 - Color coding:
   - High priority: Red
