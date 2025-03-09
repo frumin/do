@@ -13,6 +13,7 @@ A simple, Unix-style command-line todo application written in Swift. Following U
 - Flexible sorting and filtering options
 - Color-coded output
 - HTML output support
+- Shell completion support (zsh/bash/fish)
 - Built with Swift and ArgumentParser
 - Follows Unix philosophy
 
@@ -208,4 +209,32 @@ Todos are stored in `~/.todo.json` in JSON format, making it easy to interact wi
 
 ## License
 
-This project is open source and available under the MIT License. 
+This project is open source and available under the MIT License.
+
+## Shell Completion
+
+Generate and install shell completions:
+
+### Zsh
+```bash
+todo completion --shell zsh --output ~/.todo.zsh
+echo 'source ~/.todo.zsh' >> ~/.zshrc
+source ~/.zshrc
+```
+
+### Bash
+```bash
+todo completion --shell bash --output ~/.todo.bash
+echo 'source ~/.todo.bash' >> ~/.bashrc  # or ~/.bash_profile on macOS
+source ~/.bashrc  # or source ~/.bash_profile on macOS
+```
+
+### Fish
+```bash
+todo completion --shell fish --output ~/.config/fish/completions/todo.fish
+```
+
+After installation, you can use tab completion for:
+- Commands (add, list, edit, done, remove, archive, stats)
+- Options (--priority, --due, --tags, etc.)
+- Values (priority levels, archive reasons, etc.) 
