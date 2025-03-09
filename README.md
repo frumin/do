@@ -24,7 +24,6 @@ This will:
 1. Build the CLI tool
 2. Install it to `~/bin`
 3. Add `~/bin` to your PATH (if needed)
-4. Set up shell completions for zsh
 
 After installation, restart your shell or run:
 ```bash

@@ -32,7 +32,7 @@ struct ListCommand: ParsableCommand {
     @Option(name: [.customShort("g"), .long], help: "Filter by tag")
     var tag: String?
     
-    @Flag(name: [.customShort("h"), .long], help: "Output in HTML format")
+    @Flag(name: [.customShort("m"), .long], help: "Output in HTML format")
     var html = false
     
     @Flag(name: [.customShort("c"), .long], help: "Don't use colors in output")
