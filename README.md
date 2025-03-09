@@ -2,6 +2,24 @@
 
 A simple, Unix-style command-line todo application written in Swift. Following Unix principles, it stores todos in a plain text file and provides simple, focused commands for managing your tasks.
 
+## Table of Contents
+
+- [Features](#features)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Basic Commands](#basic-commands)
+  - [Managing Priorities](#managing-priorities)
+  - [Working with Due Dates](#working-with-due-dates)
+  - [Using Tags](#using-tags)
+  - [Filtering and Sorting](#filtering-and-sorting)
+  - [HTML Export](#html-export)
+  - [Statistics](#statistics)
+  - [Shell Completion](#shell-completion)
+- [Output Format](#output-format)
+- [Storage](#storage)
+- [License](#license)
+
 ## Features
 
 - Simple command-line interface
@@ -12,7 +30,7 @@ A simple, Unix-style command-line todo application written in Swift. Following U
 - Tags support with filtering
 - Flexible sorting and filtering options
 - Color-coded output
-- HTML output support
+- HTML export for todos, archives, and statistics
 - Shell completion support (zsh/bash/fish)
 - Built with Swift and ArgumentParser
 - Follows Unix philosophy
@@ -54,97 +72,19 @@ sudo cp .build/release/todo /usr/local/bin/
 
 ## Usage
 
-### Adding Todos
+### Basic Commands
 
-Add a simple todo:
+Add a todo:
 ```bash
 todo add "Buy groceries"
 ```
 
-Add with priority:
-```bash
-todo add "Important meeting" -p high
-```
-
-Add with due date:
-```bash
-todo add "Submit report" --due 2024-03-15
-```
-
-Add with tags:
-```bash
-todo add "Team meeting" --tags work,meeting
-```
-
-Add with all options:
-```bash
-todo add "Quarterly review" -p high --due 2024-03-20 --tags work,important
-```
-
-### Listing Todos
-
-List all todos:
+List todos:
 ```bash
 todo list
 ```
 
-Sort by priority:
-```bash
-todo list -p
-# or
-todo list --by-priority
-```
-
-Sort by due date:
-```bash
-todo list -d
-# or
-todo list --by-due
-```
-
-Show only high priority items:
-```bash
-todo list -h
-# or
-todo list --high-priority
-```
-
-Show overdue items:
-```bash
-todo list -o
-# or
-todo list --overdue
-```
-
-Filter by tag:
-```bash
-todo list -t work
-# or
-todo list --tag work
-```
-
-Disable colored output:
-```bash
-todo list -n
-# or
-todo list --no-color
-```
-
-Output as HTML:
-```bash
-todo list --html
-```
-
-Save HTML output to file:
-```bash
-todo list -f todos.html
-# or
-todo list --output-file todos.html
-```
-
-### Managing Todos
-
-Mark a todo as done:
+Mark as done:
 ```bash
 todo done 1
 ```
@@ -154,9 +94,16 @@ Remove a todo:
 todo remove 1
 ```
 
-Edit a todo's text:
+Edit a todo:
 ```bash
 todo edit 1 --text "Updated text"
+```
+
+### Managing Priorities
+
+Add with priority:
+```bash
+todo add "Important meeting" -p high
 ```
 
 Change priority:
@@ -164,12 +111,45 @@ Change priority:
 todo edit 1 --priority high
 ```
 
-Update due date (supports natural language):
+List by priority:
 ```bash
-todo edit 1 --due "next monday"
-todo edit 1 --due "in 2 weeks"
-todo edit 1 --due 2024-03-15
+todo list --by-priority
+```
+
+Show high priority only:
+```bash
+todo list --high-priority
+```
+
+### Working with Due Dates
+
+Add with due date:
+```bash
+todo add "Submit report" --due 2024-03-15
+```
+
+Natural language dates:
+```bash
+todo add "Team meeting" --due "next monday"
+todo add "Review" --due "in 2 weeks"
+```
+
+Update due date:
+```bash
+todo edit 1 --due tomorrow
 todo edit 1 --due none  # Remove due date
+```
+
+Show overdue items:
+```bash
+todo list --overdue
+```
+
+### Using Tags
+
+Add with tags:
+```bash
+todo add "Team meeting" --tags work,meeting
 ```
 
 Update tags:
@@ -178,10 +158,109 @@ todo edit 1 --tags "work,important"
 todo edit 1 --tags none  # Remove all tags
 ```
 
-Multiple changes at once:
+Filter by tag:
 ```bash
-todo edit 1 --text "Important meeting" --priority high --due tomorrow --tags "work,meeting"
+todo list --tag work
 ```
+
+### Filtering and Sorting
+
+Sort by priority:
+```bash
+todo list --by-priority
+```
+
+Sort by due date:
+```bash
+todo list --by-due
+```
+
+Filter by tag:
+```bash
+todo list --tag work
+```
+
+Disable colors:
+```bash
+todo list --no-color
+```
+
+### HTML Export
+
+The todo app supports exporting todos, archives, and statistics to HTML format for better visualization and sharing.
+
+Export current todos:
+```bash
+todo list --html --output-file todos.html
+```
+
+Export archived items:
+```bash
+todo archive --html --output-file archive.html
+```
+
+Export statistics:
+```bash
+todo stats --html --output-file stats.html
+```
+
+HTML exports include:
+- Responsive layout
+- Color-coded priorities
+- Interactive tag filtering
+- Due date highlighting
+- Progress bars for statistics
+- Print-friendly styling
+
+### Statistics
+
+View basic stats:
+```bash
+todo stats
+```
+
+Include archived items:
+```bash
+todo stats --include-archived
+```
+
+Show detailed tag stats:
+```bash
+todo stats --tags
+```
+
+Export as HTML:
+```bash
+todo stats --html --output-file stats.html
+```
+
+### Shell Completion
+
+Generate and install shell completions:
+
+#### Zsh
+```bash
+todo completion --shell zsh --output ~/.todo.zsh
+echo 'source ~/.todo.zsh' >> ~/.zshrc
+source ~/.zshrc
+```
+
+#### Bash
+```bash
+todo completion --shell bash --output ~/.todo.bash
+echo 'source ~/.todo.bash' >> ~/.bashrc  # or ~/.bash_profile on macOS
+source ~/.bashrc  # or source ~/.bash_profile on macOS
+```
+
+#### Fish
+```bash
+todo completion --shell fish --output ~/.config/fish/completions/todo.fish
+```
+
+After installation, you can use tab completion for:
+- Commands (add, list, edit, done, remove, archive, stats)
+- Options (--priority, --due, --tags, etc.)
+- Values (priority levels, archive reasons, etc.)
 
 ## Output Format
 
@@ -209,32 +288,4 @@ Todos are stored in `~/.todo.json` in JSON format, making it easy to interact wi
 
 ## License
 
-This project is open source and available under the MIT License.
-
-## Shell Completion
-
-Generate and install shell completions:
-
-### Zsh
-```bash
-todo completion --shell zsh --output ~/.todo.zsh
-echo 'source ~/.todo.zsh' >> ~/.zshrc
-source ~/.zshrc
-```
-
-### Bash
-```bash
-todo completion --shell bash --output ~/.todo.bash
-echo 'source ~/.todo.bash' >> ~/.bashrc  # or ~/.bash_profile on macOS
-source ~/.bashrc  # or source ~/.bash_profile on macOS
-```
-
-### Fish
-```bash
-todo completion --shell fish --output ~/.config/fish/completions/todo.fish
-```
-
-After installation, you can use tab completion for:
-- Commands (add, list, edit, done, remove, archive, stats)
-- Options (--priority, --due, --tags, etc.)
-- Values (priority levels, archive reasons, etc.) 
+This project is open source and available under the MIT License. 

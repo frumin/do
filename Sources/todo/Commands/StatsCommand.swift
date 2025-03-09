@@ -60,7 +60,7 @@ struct StatsCommand: ParsableCommand {
         let expiredCount = archived.filter { $0.reason == .expired }.count
         
         if html {
-            output += formatStatsAsHTML(
+            output = HTMLFormatter.formatStats(
                 activeCount: activeCount,
                 archivedCount: archivedCount,
                 highPriority: highPriority,
@@ -159,25 +159,5 @@ struct StatsCommand: ParsableCommand {
         
         bar += "\n"
         return bar
-    }
-    
-    private func formatStatsAsHTML(
-        activeCount: Int,
-        archivedCount: Int,
-        highPriority: Int,
-        mediumPriority: Int,
-        lowPriority: Int,
-        noPriority: Int,
-        withDueDate: Int,
-        overdue: Int,
-        dueSoon: Int,
-        withTags: Int,
-        allTags: [String: Int],
-        completedCount: Int,
-        deletedCount: Int,
-        expiredCount: Int
-    ) -> String {
-        // TODO: Implement HTML formatting for stats
-        return "HTML output for stats not implemented yet"
     }
 } 

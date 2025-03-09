@@ -58,8 +58,7 @@ struct ArchiveCommand: ParsableCommand {
         if let outputFile = outputFile {
             var fileOutput = ""
             if html {
-                // TODO: Implement HTML formatting for archived items
-                fileOutput = "HTML output for archived items not implemented yet"
+                fileOutput = HTMLFormatter.formatArchive(archive)
             } else {
                 for (index, todo) in archive.enumerated() {
                     fileOutput += todo.format(index: index + 1, colored: false) + "\n"
@@ -68,8 +67,12 @@ struct ArchiveCommand: ParsableCommand {
             try fileOutput.write(to: URL(fileURLWithPath: outputFile), atomically: true, encoding: .utf8)
             print("Output written to \(outputFile)")
         } else {
-            for (index, todo) in archive.enumerated() {
-                print(todo.format(index: index + 1, colored: !noColor))
+            if html {
+                print(HTMLFormatter.formatArchive(archive))
+            } else {
+                for (index, todo) in archive.enumerated() {
+                    print(todo.format(index: index + 1, colored: !noColor))
+                }
             }
         }
     }
