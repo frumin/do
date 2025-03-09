@@ -47,6 +47,15 @@ struct TodoItem: Codable {
         self.tags = tags
     }
     
+    init(existing: TodoItem, title: String? = nil, priority: Priority? = nil, dueDate: Date? = nil, tags: Set<String>? = nil) {
+        self.id = existing.id
+        self.title = title ?? existing.title
+        self.priority = priority ?? existing.priority
+        self.createdAt = existing.createdAt
+        self.dueDate = dueDate ?? existing.dueDate
+        self.tags = tags ?? existing.tags
+    }
+    
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()

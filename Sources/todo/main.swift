@@ -11,6 +11,7 @@ struct Todo: ParsableCommand {
         subcommands: [
             AddCommand.self,
             ListCommand.self,
+            EditCommand.self,
             DoneCommand.self,
             RemoveCommand.self,
             ArchiveCommand.self
