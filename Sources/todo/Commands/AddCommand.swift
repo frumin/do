@@ -11,8 +11,8 @@ struct AddCommand: ParsableCommand {
     var item: [String]
     
     func run() throws {
-        var todos = try TodoStorage.readTodos()
+        var todos = try Todo.storage.readTodos()
         todos.append(item.joined(separator: " "))
-        try TodoStorage.writeTodos(todos)
+        try Todo.storage.writeTodos(todos)
     }
 } 

@@ -16,22 +16,7 @@ struct Todo: ParsableCommand {
         ]
     )
     
-    private static let todoFile = FileManager.default.homeDirectoryForCurrentUser
-        .appendingPathComponent(".todo")
-        .appendingPathExtension("txt")
-    
-    static func readTodos() throws -> [String] {
-        if !FileManager.default.fileExists(atPath: todoFile.path) {
-            try "".write(to: todoFile, atomically: true, encoding: .utf8)
-        }
-        let content = try String(contentsOf: todoFile, encoding: .utf8)
-        return content.split(separator: "\n").map(String.init)
-    }
-    
-    static func writeTodos(_ todos: [String]) throws {
-        let content = todos.joined(separator: "\n")
-        try content.write(to: todoFile, atomically: true, encoding: .utf8)
-    }
+    static var storage = TodoStorage()
 }
 
 // Add a new todo
@@ -45,9 +30,9 @@ extension Todo {
         var item: [String]
         
         func run() throws {
-            var todos = try Todo.readTodos()
+            var todos = try Todo.storage.readTodos()
             todos.append(item.joined(separator: " "))
-            try Todo.writeTodos(todos)
+            try Todo.storage.writeTodos(todos)
         }
     }
 }
@@ -60,7 +45,7 @@ extension Todo {
         )
         
         func run() throws {
-            let todos = try Todo.readTodos()
+            let todos = try Todo.storage.readTodos()
             for (index, todo) in todos.enumerated() {
                 print("\(index + 1). \(todo)")
             }
@@ -82,12 +67,12 @@ extension Todo {
         var number: Int
         
         func run() throws {
-            var todos = try Todo.readTodos()
+            var todos = try Todo.storage.readTodos()
             guard number > 0 && number <= todos.count else {
                 throw ValidationError("Invalid todo number")
             }
             todos.remove(at: number - 1)
-            try Todo.writeTodos(todos)
+            try Todo.storage.writeTodos(todos)
         }
     }
 }
@@ -103,12 +88,12 @@ extension Todo {
         var number: Int
         
         func run() throws {
-            var todos = try Todo.readTodos()
+            var todos = try Todo.storage.readTodos()
             guard number > 0 && number <= todos.count else {
                 throw ValidationError("Invalid todo number")
             }
             todos.remove(at: number - 1)
-            try Todo.writeTodos(todos)
+            try Todo.storage.writeTodos(todos)
         }
     }
 }

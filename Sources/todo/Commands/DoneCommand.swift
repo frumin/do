@@ -11,11 +11,11 @@ struct DoneCommand: ParsableCommand {
     var number: Int
     
     func run() throws {
-        var todos = try TodoStorage.readTodos()
+        var todos = try Todo.storage.readTodos()
         guard number > 0 && number <= todos.count else {
             throw ValidationError("Invalid todo number")
         }
         todos.remove(at: number - 1)
-        try TodoStorage.writeTodos(todos)
+        try Todo.storage.writeTodos(todos)
     }
 } 
