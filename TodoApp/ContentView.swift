@@ -3,7 +3,7 @@ import TodoKit
 
 struct ContentView: View {
     @EnvironmentObject private var todoStore: TodoStore
-    @State private var selectedPriority: Todo.Priority?
+    @State private var selectedPriority: Priority?
     @State private var searchText = ""
     @State private var showOverdueOnly = false
     
@@ -20,16 +20,16 @@ struct ContentView: View {
         NavigationSplitView {
             List(selection: $selectedPriority) {
                 Text("All")
-                    .tag(nil as Todo.Priority?)
+                    .tag(nil as Priority?)
                 
                 Section("Priorities") {
-                    ForEach([Todo.Priority.high, .medium, .low, .none], id: \.self) { priority in
+                    ForEach([Priority.high, .medium, .low, .none], id: \.self) { priority in
                         Label {
                             Text(priority.rawValue.capitalized)
                         } icon: {
                             Text(priority.symbol)
                         }
-                        .tag(priority as Todo.Priority?)
+                        .tag(priority as Priority?)
                     }
                 }
             }
