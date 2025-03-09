@@ -86,6 +86,12 @@ public class TodoStorage {
         try writeTodos(todos)
     }
     
+    public func deleteTodo(_ todo: Todo) throws {
+        var todos = try readTodos()
+        todos.removeAll { $0.id == todo.id }
+        try writeTodos(todos)
+    }
+    
     public func observeChanges() -> AsyncStream<[Todo]> {
         AsyncStream { continuation in
             let _ = try? FileHandle(forReadingFrom: todosURL)

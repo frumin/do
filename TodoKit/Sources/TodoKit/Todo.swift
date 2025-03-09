@@ -11,6 +11,7 @@ public struct Todo: Identifiable, Codable, Equatable {
     public var dueDate: Date?
     public var tags: [String]
     public let createdAt: Date
+    public var completedAt: Date?
     
     public init(
         id: UUID = UUID(),
@@ -18,7 +19,8 @@ public struct Todo: Identifiable, Codable, Equatable {
         priority: Priority = .none,
         dueDate: Date? = nil,
         tags: [String] = [],
-        createdAt: Date = Date()
+        createdAt: Date = Date(),
+        completedAt: Date? = nil
     ) {
         self.id = id
         self.title = title
@@ -26,15 +28,11 @@ public struct Todo: Identifiable, Codable, Equatable {
         self.dueDate = dueDate
         self.tags = tags
         self.createdAt = createdAt
+        self.completedAt = completedAt
     }
     
     public var formattedDueDate: String? {
-        guard let dueDate = dueDate else { return nil }
-        
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .short
-        return formatter.string(from: dueDate)
+        dueDate?.formatted(date: .numeric, time: .omitted)
     }
     
     public var formattedTags: String {
@@ -43,7 +41,7 @@ public struct Todo: Identifiable, Codable, Equatable {
     
     public var isOverdue: Bool {
         guard let dueDate = dueDate else { return false }
-        return dueDate < Date()
+        return dueDate < Date() && completedAt == nil
     }
     
     #if canImport(SwiftUI)
