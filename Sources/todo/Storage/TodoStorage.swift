@@ -2,13 +2,20 @@ import Foundation
 
 struct TodoStorage {
     private let todoFile: URL
-    private let encoder = JSONEncoder()
-    private let decoder = JSONDecoder()
+    private let encoder: JSONEncoder
+    private let decoder: JSONDecoder
     
     init(filePath: URL? = nil) {
         self.todoFile = filePath ?? FileManager.default.homeDirectoryForCurrentUser
             .appendingPathComponent(".todo")
             .appendingPathExtension("json")
+            
+        self.encoder = JSONEncoder()
+        self.encoder.dateEncodingStrategy = .iso8601
+        self.encoder.outputFormatting = .prettyPrinted
+        
+        self.decoder = JSONDecoder()
+        self.decoder.dateDecodingStrategy = .iso8601
     }
     
     func readTodos() throws -> [TodoItem] {

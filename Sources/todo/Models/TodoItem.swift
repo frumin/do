@@ -45,6 +45,15 @@ struct TodoItem: Codable {
         self.tags = tags
     }
     
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        title = try container.decode(String.self, forKey: .title)
+        priority = try container.decode(Priority.self, forKey: .priority)
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
+        dueDate = try container.decodeIfPresent(Date.self, forKey: .dueDate)
+        tags = try container.decodeIfPresent(Set<String>.self, forKey: .tags) ?? []
+    }
+    
     var isOverdue: Bool {
         guard let dueDate = dueDate else { return false }
         return Date() > dueDate

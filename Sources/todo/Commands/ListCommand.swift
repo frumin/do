@@ -25,6 +25,12 @@ struct ListCommand: ParsableCommand {
     @Flag(name: .shortAndLong, help: "Disable colored output")
     var noColor = false
     
+    @Flag(name: .shortAndLong, help: "Output as HTML")
+    var html = false
+    
+    @Option(name: .shortAndLong, help: "Output HTML to file")
+    var outputFile: String?
+    
     static func listTodos(
         to output: inout some TextOutputStream,
         todos: [TodoItem],
@@ -33,7 +39,8 @@ struct ListCommand: ParsableCommand {
         highPriorityOnly: Bool = false,
         overdueOnly: Bool = false,
         tag: String? = nil,
-        colored: Bool = true
+        colored: Bool = true,
+        html: Bool = false
     ) throws {
         var displayTodos = todos
         
@@ -65,28 +72,51 @@ struct ListCommand: ParsableCommand {
         }
         
         if displayTodos.isEmpty {
-            print("No todos found!", to: &output)
+            print(html ? HTMLFormatter.format([]) : "No todos found!", to: &output)
             return
         }
         
-        for (index, todo) in displayTodos.enumerated() {
-            print(todo.format(index: index + 1, colored: colored), to: &output)
+        if html {
+            print(HTMLFormatter.format(displayTodos), to: &output)
+        } else {
+            for (index, todo) in displayTodos.enumerated() {
+                print(todo.format(index: index + 1, colored: colored), to: &output)
+            }
         }
     }
     
     func run() throws {
-        var stdout = StandardOutputStream()
         let todos = try Todo.storage.readTodos()
-        try ListCommand.listTodos(
-            to: &stdout,
-            todos: todos,
-            byPriority: byPriority,
-            byDue: byDue,
-            highPriorityOnly: highPriority,
-            overdueOnly: overdue,
-            tag: tag,
-            colored: !noColor
-        )
+        
+        if let outputFile = outputFile {
+            var fileOutput = ""
+            try ListCommand.listTodos(
+                to: &fileOutput,
+                todos: todos,
+                byPriority: byPriority,
+                byDue: byDue,
+                highPriorityOnly: highPriority,
+                overdueOnly: overdue,
+                tag: tag,
+                colored: !noColor,
+                html: true
+            )
+            try fileOutput.write(to: URL(fileURLWithPath: outputFile), atomically: true, encoding: .utf8)
+            print("Output written to \(outputFile)")
+        } else {
+            var stdout = StandardOutputStream()
+            try ListCommand.listTodos(
+                to: &stdout,
+                todos: todos,
+                byPriority: byPriority,
+                byDue: byDue,
+                highPriorityOnly: highPriority,
+                overdueOnly: overdue,
+                tag: tag,
+                colored: !noColor,
+                html: html
+            )
+        }
     }
 }
 

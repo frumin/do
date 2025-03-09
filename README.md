@@ -11,6 +11,7 @@ A simple, Unix-style command-line todo application written in Swift. Following U
 - Tags support with filtering
 - Flexible sorting and filtering options
 - Color-coded output
+- HTML output support
 - Built with Swift and ArgumentParser
 - Follows Unix philosophy
 
@@ -113,6 +114,16 @@ todo list --tag work
 Disable colored output:
 ```bash
 todo list --no-color
+```
+
+Output as HTML:
+```bash
+todo list --html
+```
+
+Save HTML output to file:
+```bash
+todo list --output-file todos.html
 ```
 
 ### Managing Todos
