@@ -2,7 +2,7 @@ import Foundation
 import TodoKit
 
 typealias Todo = TodoKit.Todo
-typealias Priority = Todo.Priority
+typealias Priority = TodoKit.Priority
 typealias ArchivedTodoItem = TodoKit.ArchivedTodoItem
 typealias ArchiveReason = TodoKit.ArchiveReason
 

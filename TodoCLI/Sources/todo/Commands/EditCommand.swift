@@ -32,10 +32,11 @@ struct EditCommand: ParsableCommand {
     mutating func run() throws {
         var todos = try Todo.storage.readTodos()
         guard number > 0 && number <= todos.count else {
-            throw ValidationError("Invalid todo number: \(number)")
+            throw ValidationError("Todo #\(number) doesn't exist. Valid numbers are 1 to \(todos.count).")
         }
         
-        var todo = todos[number - 1]
+        let oldTodo = todos[number - 1]
+        var todo = oldTodo
         
         if let title = title {
             todo.title = title
@@ -60,7 +61,42 @@ struct EditCommand: ParsableCommand {
         todos[number - 1] = todo
         try Todo.storage.writeTodos(todos)
         
-        print("✏️ Updated todo:")
-        print(todo.format())
+        print("\n✏️ Updated todo #\(number):")
+        print("─────────────────────")
+        if oldTodo != todo {
+            print("Before: \(oldTodo.format())")
+            print("After:  \(todo.format())")
+            
+            // Show what changed
+            var changes: [String] = []
+            if oldTodo.title != todo.title {
+                changes.append("title")
+            }
+            if oldTodo.priority != todo.priority {
+                changes.append("priority")
+            }
+            if oldTodo.dueDate != todo.dueDate {
+                changes.append("due date")
+            }
+            if oldTodo.tags != todo.tags {
+                changes.append("tags")
+            }
+            print("\nChanged: \(changes.joined(separator: ", "))")
+            
+            // Show helpful next steps
+            print("\n📝 Next steps:")
+            print("• List all todos: todo list")
+            if todo.priority == .none {
+                print("• Set priority: todo edit \(number) --priority 1")
+            }
+            if todo.dueDate == nil {
+                print("• Add due date: todo edit \(number) --due \"tomorrow 2pm\"")
+            }
+            if todo.tags.isEmpty {
+                print("• Add tags: todo edit \(number) --tags \"work,important\"")
+            }
+        } else {
+            print("No changes were made to the todo.")
+        }
     }
 } 

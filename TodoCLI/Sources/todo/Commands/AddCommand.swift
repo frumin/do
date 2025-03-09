@@ -36,7 +36,21 @@ struct AddCommand: ParsableCommand {
         }
         
         try Todo.storage.addTodo(todo)
-        print("✨ Added todo:")
+        print("\n✨ Added new todo:")
+        print("─────────────────")
         print(todo.format())
+        
+        // Show helpful next steps
+        print("\n📝 Next steps:")
+        print("• List all todos: todo list")
+        if todo.priority == .none {
+            print("• Set priority: todo edit \(try Todo.storage.readTodos().count) --priority 1")
+        }
+        if todo.dueDate == nil {
+            print("• Add due date: todo edit \(try Todo.storage.readTodos().count) --due \"tomorrow 2pm\"")
+        }
+        if todo.tags.isEmpty {
+            print("• Add tags: todo edit \(try Todo.storage.readTodos().count) --tags \"work,important\"")
+        }
     }
 } 

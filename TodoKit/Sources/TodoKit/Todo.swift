@@ -4,12 +4,12 @@ import SwiftUI
 #endif
 import ArgumentParser
 
-public struct Todo: Identifiable, Codable {
+public struct Todo: Identifiable, Codable, Equatable {
     public let id: UUID
-    public let title: String
-    public let priority: Priority
-    public let dueDate: Date?
-    public let tags: [String]
+    public var title: String
+    public var priority: Priority
+    public var dueDate: Date?
+    public var tags: [String]
     public let createdAt: Date
     
     public init(
@@ -74,7 +74,7 @@ extension Todo {
         tags.map { "#\($0)" }.joined(separator: " ")
     }
     
-    public func format(index: Int?) -> String {
+    public func format(index: Int? = nil) -> String {
         var parts: [String] = []
         
         if let index = index {
