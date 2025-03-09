@@ -4,28 +4,28 @@ import Foundation
 struct ArchiveCommand: ParsableCommand {
     static var configuration = CommandConfiguration(
         commandName: "archive",
-        abstract: "View or manage archived todo items"
+        abstract: "Look back at your completed tasks 📚"
     )
     
-    @Flag(name: [.customShort("p"), .long], help: "Sort by priority")
+    @Flag(name: [.customShort("p"), .long], help: "Arrange tasks by importance")
     var byPriority = false
     
-    @Flag(name: [.customShort("d"), .long], help: "Sort by archive date")
+    @Flag(name: [.customShort("d"), .long], help: "Arrange tasks by when they were completed")
     var byDate = false
     
-    @Option(name: .shortAndLong, help: "Filter by tag")
+    @Option(name: .shortAndLong, help: "Show tasks with a specific tag")
     var tag: String?
     
-    @Option(name: .shortAndLong, help: "Filter by archive reason (completed/deleted/expired)")
+    @Option(name: .shortAndLong, help: "Show tasks by how they were archived (completed/deleted/expired)")
     var reason: String?
     
-    @Flag(name: .shortAndLong, help: "Disable colored output")
+    @Flag(name: .shortAndLong, help: "Turn off colorful output")
     var noColor = false
     
-    @Flag(name: .shortAndLong, help: "Output as HTML")
+    @Flag(name: .shortAndLong, help: "Create a pretty web page of your archived tasks")
     var html = false
     
-    @Option(name: [.customShort("f"), .long], help: "Output HTML to file")
+    @Option(name: [.customShort("f"), .long], help: "Save the web page to a file")
     var outputFile: String?
     
     func run() throws {
@@ -38,7 +38,7 @@ struct ArchiveCommand: ParsableCommand {
         
         if let reason = reason {
             guard let archiveReason = ArchiveReason(rawValue: reason.lowercased()) else {
-                throw ValidationError("Invalid archive reason. Use: completed, deleted, or expired")
+                throw ValidationError("I don't recognize that archive reason. You can use: 'completed', 'deleted', or 'expired' 🤔")
             }
             archive = archive.filter { $0.reason == archiveReason }
         }
@@ -51,7 +51,7 @@ struct ArchiveCommand: ParsableCommand {
         }
         
         if archive.isEmpty {
-            print("No archived todos found!")
+            print("No completed tasks yet! Keep going, you'll get there! 💪")
             return
         }
         

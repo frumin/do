@@ -4,40 +4,52 @@ import Foundation
 struct EditCommand: ParsableCommand {
     static var configuration = CommandConfiguration(
         commandName: "edit",
-        abstract: "Edit a todo item"
+        abstract: "Update one of your tasks ✏️"
     )
     
-    @Argument(help: "The number of the todo item to edit")
+    @Argument(help: "Which task would you like to update? (enter its number)")
     var number: Int
     
-    @Option(name: .shortAndLong, help: "New text for the todo")
+    @Option(name: .shortAndLong, help: "Change what the task says")
     var text: String?
     
-    @Option(name: .shortAndLong, help: "New priority level (high/medium/low)")
+    @Option(name: .shortAndLong, help: "Change how important this task is (high/medium/low)")
     var priority: String?
     
     @Option(name: .shortAndLong, help: """
-        New due date. Supports:
-        - ISO format (YYYY-MM-DD)
-        - Natural language ('tomorrow', 'next monday')
-        - Relative ('in 2 weeks', 'in 3 days')
-        - 'none' to remove due date
+        Change when it's due. You can use:
+        - Calendar dates (YYYY-MM-DD)
+        - Natural phrases ('tomorrow', 'next monday')
+        - Relative times ('in 2 weeks', 'in 3 days')
+        - 'none' to remove the due date
         """)
     var due: String?
     
-    @Option(name: .shortAndLong, help: "New tags (comma-separated, 'none' to remove all tags)")
+    @Option(name: .shortAndLong, help: "Update task tags (comma-separated, use 'none' to remove all tags)")
     var tags: String?
     
     func run() throws {
         var todos = try Todo.storage.readTodos()
         guard number > 0 && number <= todos.count else {
-            throw ValidationError("Invalid todo number")
+            throw ValidationError("Oops! That task number doesn't exist. Try 'todo list' to see your tasks and their numbers 🔍")
         }
         
         let oldTodo = todos[number - 1]
         
         // Process new values
-        let newPriority = priority.map { Priority(rawValue: $0.lowercased()) ?? .none }
+        let newPriority: Priority?
+        if let priorityStr = priority?.lowercased() {
+            if let p = Priority(rawValue: priorityStr) {
+                newPriority = p
+            } else {
+                throw ValidationError("""
+                    I don't recognize that priority level 🤔
+                    You can use: 'high', 'medium', or 'low'
+                    """)
+            }
+        } else {
+            newPriority = nil
+        }
         
         let newDueDate: Date?
         if let due = due {
@@ -74,13 +86,13 @@ struct EditCommand: ParsableCommand {
            newTodo.priority == oldTodo.priority &&
            newTodo.dueDate == oldTodo.dueDate &&
            newTodo.tags == oldTodo.tags {
-            print("No changes specified. Use --help to see available options.")
+            print("No changes made. Try --help to see what you can change!")
             return
         }
         
         todos[number - 1] = newTodo
         try Todo.storage.writeTodos(todos)
-        print("Todo updated successfully:")
+        print("✏️ Task updated:")
         print(newTodo.format(index: number))
     }
 } 

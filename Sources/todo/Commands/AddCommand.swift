@@ -4,30 +4,43 @@ import Foundation
 struct AddCommand: ParsableCommand {
     static var configuration = CommandConfiguration(
         commandName: "add",
-        abstract: "Add a new todo item"
+        abstract: "Add a new task to your list ✨"
     )
     
-    @Argument(help: "The todo item to add")
+    @Argument(help: "What would you like to add to your list?")
     var item: [String]
     
-    @Option(name: .shortAndLong, help: "Priority level (high/medium/low)")
+    @Option(name: .shortAndLong, help: "How important is this task? (high/medium/low)")
     var priority: String?
     
     @Option(name: .shortAndLong, help: """
-        Due date. Supports:
-        - ISO format (YYYY-MM-DD)
-        - Natural language ('tomorrow', 'next monday')
-        - Relative ('in 2 weeks', 'in 3 days')
+        When should this be done? You can use:
+        - Calendar dates (YYYY-MM-DD)
+        - Natural phrases ('tomorrow', 'next monday')
+        - Relative times ('in 2 weeks', 'in 3 days')
         """)
     var due: String?
     
-    @Option(name: .shortAndLong, help: "Tags (comma-separated)")
+    @Option(name: .shortAndLong, help: "Add some tags to organize your task (comma-separated)")
     var tags: String?
     
     func run() throws {
         var todos = try Todo.storage.readTodos()
         
-        let priority = Priority(rawValue: self.priority?.lowercased() ?? "") ?? .none
+        let priority: Priority
+        if let priorityStr = self.priority?.lowercased() {
+            if let p = Priority(rawValue: priorityStr) {
+                priority = p
+            } else {
+                throw ValidationError("""
+                    I don't recognize that priority level 🤔
+                    You can use: 'high', 'medium', or 'low'
+                    """)
+            }
+        } else {
+            priority = .none
+        }
+        
         let dueDate = try due.map { try DateParser.parse($0) }
         let tags = Set(tags?.split(separator: ",").map(String.init) ?? [])
         
@@ -40,5 +53,7 @@ struct AddCommand: ParsableCommand {
         
         todos.append(newTodo)
         try Todo.storage.writeTodos(todos)
+        print("✨ Added to your list:")
+        print(newTodo.format(index: todos.count))
     }
 } 

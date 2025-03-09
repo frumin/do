@@ -4,13 +4,13 @@ import Foundation
 struct CompletionCommand: ParsableCommand {
     static var configuration = CommandConfiguration(
         commandName: "completion",
-        abstract: "Generate shell completion scripts"
+        abstract: "Make your shell smarter with tab completion 🔍"
     )
     
-    @Option(name: .shortAndLong, help: "Shell to generate completions for (zsh/bash/fish)")
+    @Option(name: .shortAndLong, help: "Which shell do you use? (zsh/bash/fish)")
     var shell: String
     
-    @Option(name: .shortAndLong, help: "Output file (optional)")
+    @Option(name: .shortAndLong, help: "Where should we save the completion script?")
     var output: String?
     
     func run() throws {
@@ -23,7 +23,7 @@ struct CompletionCommand: ParsableCommand {
         case "fish":
             script = generateFishCompletion()
         default:
-            throw ValidationError("Unsupported shell: \(shell). Use: zsh, bash, or fish")
+            throw ValidationError("I don't know that shell type. I can help with: zsh, bash, or fish 🐚")
         }
         
         if let output = output {

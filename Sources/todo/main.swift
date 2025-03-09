@@ -7,7 +7,7 @@ import Foundation
 struct Todo: ParsableCommand {
     static var configuration = CommandConfiguration(
         commandName: "todo",
-        abstract: "A simple todo manager",
+        abstract: "Your friendly task manager for the command line 🌟",
         subcommands: [
             AddCommand.self,
             ListCommand.self,

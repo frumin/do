@@ -4,22 +4,22 @@ import Foundation
 struct StatsCommand: ParsableCommand {
     static var configuration = CommandConfiguration(
         commandName: "stats",
-        abstract: "Show todo statistics"
+        abstract: "See how you're doing with your tasks 📊"
     )
     
-    @Flag(name: .shortAndLong, help: "Include archived todos in stats")
+    @Flag(name: .shortAndLong, help: "Include your completed tasks in the stats")
     var includeArchived = false
     
-    @Flag(name: .shortAndLong, help: "Show detailed tag statistics")
+    @Flag(name: .shortAndLong, help: "See how you're using tags")
     var tags = false
     
-    @Flag(name: .shortAndLong, help: "Disable colored output")
+    @Flag(name: .shortAndLong, help: "Turn off colorful output")
     var noColor = false
     
-    @Flag(name: .shortAndLong, help: "Output as HTML")
+    @Flag(name: .shortAndLong, help: "Create a pretty web page of your stats")
     var html = false
     
-    @Option(name: [.customShort("f"), .long], help: "Output HTML to file")
+    @Option(name: [.customShort("f"), .long], help: "Save the web page to a file")
     var outputFile: String?
     
     func run() throws {
@@ -78,36 +78,36 @@ struct StatsCommand: ParsableCommand {
             )
         } else {
             // Basic stats
-            output += "Todo Statistics:\n"
+            output += "Your Task Summary:\n"
             output += "═══════════════\n\n"
             
-            output += "Counts:\n"
-            output += "  Active todos: \(activeCount)\n"
+            output += "Overview:\n"
+            output += "  Active tasks: \(activeCount)\n"
             if includeArchived {
-                output += "  Archived todos: \(archivedCount)\n"
-                output += "  Total todos: \(totalCount)\n"
+                output += "  Completed tasks: \(archivedCount)\n"
+                output += "  Total tasks: \(totalCount)\n"
             }
             output += "\n"
             
             // Priority distribution
-            output += "Priorities:\n"
+            output += "Task Importance:\n"
             output += formatPriorityBar(high: highPriority, medium: mediumPriority, low: lowPriority, none: noPriority, colored: !noColor)
-            output += "  High: \(highPriority)\n"
-            output += "  Medium: \(mediumPriority)\n"
-            output += "  Low: \(lowPriority)\n"
-            output += "  None: \(noPriority)\n\n"
+            output += "  High priority: \(highPriority)\n"
+            output += "  Medium priority: \(mediumPriority)\n"
+            output += "  Low priority: \(lowPriority)\n"
+            output += "  No priority: \(noPriority)\n\n"
             
             // Due dates
-            output += "Due Dates:\n"
-            output += "  With due date: \(withDueDate)\n"
-            output += "  Overdue: \(overdue)\n"
-            output += "  Due within 7 days: \(dueSoon)\n\n"
+            output += "Timing:\n"
+            output += "  Tasks with due dates: \(withDueDate)\n"
+            output += "  Need attention soon: \(overdue)\n"
+            output += "  Coming up this week: \(dueSoon)\n\n"
             
             // Tags
-            output += "Tags:\n"
-            output += "  With tags: \(withTags)\n"
+            output += "Organization:\n"
+            output += "  Tasks with tags: \(withTags)\n"
             if tags && !allTags.isEmpty {
-                output += "  Most used tags:\n"
+                output += "  Your most used tags:\n"
                 let sortedTags = allTags.sorted { $0.value > $1.value }
                 for (tag, count) in sortedTags.prefix(5) {
                     output += "    #\(tag): \(count)\n"
@@ -117,9 +117,9 @@ struct StatsCommand: ParsableCommand {
             
             // Archive stats
             if includeArchived {
-                output += "Archive:\n"
-                output += "  Completed: \(completedCount)\n"
-                output += "  Deleted: \(deletedCount)\n"
+                output += "Completed Tasks:\n"
+                output += "  Finished: \(completedCount)\n"
+                output += "  Removed: \(deletedCount)\n"
                 output += "  Expired: \(expiredCount)\n"
             }
         }

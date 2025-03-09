@@ -7,7 +7,13 @@ enum DateParserError: Error {
     var description: String {
         switch self {
         case .invalidFormat:
-            return "Invalid date format. Try formats like: 'tomorrow', 'next monday', 'in 2 weeks', or YYYY-MM-DD"
+            return """
+                I couldn't understand that date format 📅
+                You can use:
+                - Calendar dates (like '2024-03-15')
+                - Natural phrases (like 'tomorrow' or 'next monday')
+                - Relative times (like 'in 2 weeks' or 'in 3 days')
+                """
         }
     }
 }

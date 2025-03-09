@@ -4,31 +4,31 @@ import Foundation
 struct ListCommand: ParsableCommand {
     static var configuration = CommandConfiguration(
         commandName: "list",
-        abstract: "List all todo items"
+        abstract: "See what's on your plate 📋"
     )
     
-    @Flag(name: [.customShort("p"), .long], help: "Sort by priority")
+    @Flag(name: [.customShort("p"), .long], help: "Arrange tasks by importance")
     var byPriority = false
     
-    @Flag(name: [.customShort("d"), .long], help: "Sort by due date")
+    @Flag(name: [.customShort("d"), .long], help: "Arrange tasks by due date")
     var byDue = false
     
-    @Flag(name: .shortAndLong, help: "Show only high priority items")
+    @Flag(name: .shortAndLong, help: "Show only your most important tasks")
     var highPriority = false
     
-    @Flag(name: .shortAndLong, help: "Show only overdue items")
+    @Flag(name: .shortAndLong, help: "Show tasks that need attention soon")
     var overdue = false
     
-    @Option(name: .shortAndLong, help: "Filter by tag")
+    @Option(name: .shortAndLong, help: "Show tasks with a specific tag")
     var tag: String?
     
-    @Flag(name: .shortAndLong, help: "Disable colored output")
+    @Flag(name: .shortAndLong, help: "Turn off colorful output")
     var noColor = false
     
-    @Flag(name: .shortAndLong, help: "Output as HTML")
+    @Flag(name: .shortAndLong, help: "Create a pretty web page of your tasks")
     var html = false
     
-    @Option(name: [.customShort("f"), .long], help: "Output HTML to file")
+    @Option(name: [.customShort("f"), .long], help: "Save the web page to a file")
     var outputFile: String?
     
     static func listTodos(
@@ -72,7 +72,7 @@ struct ListCommand: ParsableCommand {
         }
         
         if displayTodos.isEmpty {
-            print(html ? HTMLFormatter.format([]) : "No todos found!", to: &output)
+            print(html ? HTMLFormatter.format([]) : "Nothing on your list yet! Add something with 'todo add'", to: &output)
             return
         }
         
