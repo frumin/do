@@ -13,7 +13,7 @@ let package = Package(
         .executableTarget(
             name: "TodoApp",
             dependencies: ["TodoKit"],
-            path: "TodoApp"
+            path: "."
         )
     ]
 )
