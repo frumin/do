@@ -88,7 +88,7 @@ public class TodoStorage {
     
     public func observeChanges() -> AsyncStream<[Todo]> {
         AsyncStream { continuation in
-            let fileHandle = try? FileHandle(forReadingFrom: todosURL)
+            let _ = try? FileHandle(forReadingFrom: todosURL)
             Task {
                 while !Task.isCancelled {
                     try? await Task.sleep(nanoseconds: 1_000_000_000)
