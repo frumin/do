@@ -17,6 +17,18 @@ A simple, Unix-style command-line todo application written in Swift. Following U
 
 ## Installation
 
+### Quick Install
+
+```bash
+git clone https://github.com/frumin/do.git
+cd do
+./install.sh
+```
+
+This will build the app and install it to `/usr/local/bin/todo`. You might need to enter your password if sudo is required.
+
+### Manual Installation
+
 1. Clone the repository:
 ```bash
 git clone https://github.com/frumin/do.git
@@ -28,7 +40,7 @@ cd do
 swift build -c release
 ```
 
-3. (Optional) Install to your system:
+3. Copy the binary to your preferred location:
 ```bash
 sudo cp .build/release/todo /usr/local/bin/
 ```
