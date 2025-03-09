@@ -1,6 +1,6 @@
 # Swift
 .DS_Store
-/.build
+.build/
 /Packages
 /*.xcodeproj
 xcuserdata/
@@ -23,3 +23,6 @@ todos.html
 
 # HTML exports
 *.html
+
+# Added build directories
+TodoKit/.build/
