@@ -23,6 +23,7 @@ struct DateParser {
         // First try ISO format
         let isoFormatter = DateFormatter()
         isoFormatter.dateFormat = "yyyy-MM-dd"
+        isoFormatter.timeZone = .current
         if let date = isoFormatter.date(from: input) {
             return date
         }
@@ -37,13 +38,13 @@ struct DateParser {
         // Handle relative dates
         switch lowercased {
         case "today":
-            return now
+            return Calendar.current.startOfDay(for: now)
         case "tomorrow":
-            return now + 1.days
+            return Calendar.current.startOfDay(for: now + 1.days)
         case "next week":
-            return now + 7.days
+            return Calendar.current.startOfDay(for: now + 7.days)
         case "next month":
-            return now + 1.months
+            return Calendar.current.startOfDay(for: now + 1.months)
         default:
             break
         }

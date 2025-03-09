@@ -79,9 +79,19 @@ struct TodoItem: Codable {
         
         if let dueDate = dueDate {
             let dateFormatter = DateFormatter()
-            dateFormatter.dateStyle = .short
-            let dueDateColor = colored ? (isOverdue ? "\u{001B}[31m" : "\u{001B}[36m") : ""
-            result += " \(dueDateColor)📅 \(dateFormatter.string(from: dueDate))\(colored ? reset : "")"
+            
+            // For dates within 24 hours, show time
+            if dueDate.timeIntervalSinceNow < 24 * 3600 {
+                dateFormatter.dateStyle = .none
+                dateFormatter.timeStyle = .short
+                let dueDateColor = colored ? (isOverdue ? "\u{001B}[31m" : "\u{001B}[36m") : ""
+                result += " \(dueDateColor)⏰ \(dateFormatter.string(from: dueDate))\(colored ? reset : "")"
+            } else {
+                dateFormatter.dateStyle = .short
+                dateFormatter.timeStyle = .none
+                let dueDateColor = colored ? (isOverdue ? "\u{001B}[31m" : "\u{001B}[36m") : ""
+                result += " \(dueDateColor)📅 \(dateFormatter.string(from: dueDate))\(colored ? reset : "")"
+            }
         }
         
         if !tags.isEmpty {
