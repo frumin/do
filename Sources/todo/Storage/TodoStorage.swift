@@ -22,7 +22,7 @@ struct TodoStorage {
     
     func writeTodos(_ todos: [TodoItem]) throws {
         let data = try encoder.encode(todos)
-        try data.write(to: todoFile, atomically: true)
+        try data.write(to: todoFile, options: .atomic)
     }
     
     func deleteTodoFile() throws {
