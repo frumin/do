@@ -1,14 +1,19 @@
 // The Swift Programming Language
 // https://docs.swift.org/swift-book
 
-import Foundation
 import ArgumentParser
+import Foundation
 
 struct Todo: ParsableCommand {
     static var configuration = CommandConfiguration(
         commandName: "todo",
         abstract: "A simple todo manager",
-        subcommands: [Add.self, List.self, Done.self, Remove.self]
+        subcommands: [
+            AddCommand.self,
+            ListCommand.self,
+            DoneCommand.self,
+            RemoveCommand.self
+        ]
     )
     
     private static let todoFile = FileManager.default.homeDirectoryForCurrentUser
@@ -31,7 +36,7 @@ struct Todo: ParsableCommand {
 
 // Add a new todo
 extension Todo {
-    struct Add: ParsableCommand {
+    struct AddCommand: ParsableCommand {
         static var configuration = CommandConfiguration(
             abstract: "Add a new todo item"
         )
@@ -49,7 +54,7 @@ extension Todo {
 
 // List all todos
 extension Todo {
-    struct List: ParsableCommand {
+    struct ListCommand: ParsableCommand {
         static var configuration = CommandConfiguration(
             abstract: "List all todo items"
         )
@@ -68,7 +73,7 @@ extension Todo {
 
 // Mark a todo as done
 extension Todo {
-    struct Done: ParsableCommand {
+    struct DoneCommand: ParsableCommand {
         static var configuration = CommandConfiguration(
             abstract: "Mark a todo item as done"
         )
@@ -89,7 +94,7 @@ extension Todo {
 
 // Remove a todo
 extension Todo {
-    struct Remove: ParsableCommand {
+    struct RemoveCommand: ParsableCommand {
         static var configuration = CommandConfiguration(
             abstract: "Remove a todo item"
         )
