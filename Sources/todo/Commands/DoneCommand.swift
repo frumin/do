@@ -11,7 +11,7 @@ struct DoneCommand: ParsableCommand {
     var number: Int
     
     func run() throws {
-        var todos = try Todo.storage.readTodos()
+        let todos = try Todo.storage.readTodos()
         guard number > 0 && number <= todos.count else {
             throw ValidationError("Oops! That task number doesn't exist. Try 'todo list' to see your tasks and their numbers 🔍")
         }
