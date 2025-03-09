@@ -13,26 +13,22 @@ struct AddCommand: ParsableCommand {
     @Option(name: .shortAndLong, help: "Priority level (high/medium/low)")
     var priority: String?
     
-    @Option(name: .shortAndLong, help: "Due date (format: YYYY-MM-DD)")
+    @Option(name: .shortAndLong, help: """
+        Due date. Supports:
+        - ISO format (YYYY-MM-DD)
+        - Natural language ('tomorrow', 'next monday')
+        - Relative ('in 2 weeks', 'in 3 days')
+        """)
     var due: String?
     
     @Option(name: .shortAndLong, help: "Tags (comma-separated)")
     var tags: String?
     
-    private func parseDate(_ dateString: String) throws -> Date {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        if let date = formatter.date(from: dateString) {
-            return date
-        }
-        throw ValidationError("Invalid date format. Please use YYYY-MM-DD")
-    }
-    
     func run() throws {
         var todos = try Todo.storage.readTodos()
         
         let priority = Priority(rawValue: self.priority?.lowercased() ?? "") ?? .none
-        let dueDate = try due.map { try parseDate($0) }
+        let dueDate = try due.map { try DateParser.parse($0) }
         let tags = Set(tags?.split(separator: ",").map(String.init) ?? [])
         
         let newTodo = TodoItem(
