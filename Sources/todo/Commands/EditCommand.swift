@@ -11,22 +11,22 @@ struct EditCommand: ParsableCommand {
     @Argument(help: "The number of the todo to edit")
     var number: Int
     
-    @Option(name: .shortAndLong, help: "New title")
+    @Option(name: [.customShort("i"), .long], help: "New title")
     var title: String?
     
-    @Option(name: .shortAndLong, help: "New priority (high, medium, low)")
+    @Option(name: [.customShort("p"), .long], help: "New priority (high, medium, low)")
     var priority: Todo.Priority?
     
-    @Option(name: .shortAndLong, help: "New due date (YYYY-MM-DD or natural language)")
+    @Option(name: [.customShort("d"), .long], help: "New due date (YYYY-MM-DD or natural language)")
     var due: String?
     
-    @Option(name: .shortAndLong, help: "New tags (comma-separated)")
+    @Option(name: [.customShort("t"), .long], help: "New tags (comma-separated)")
     var tags: String?
     
-    @Flag(name: .shortAndLong, help: "Remove due date")
+    @Flag(name: [.customShort("x"), .long], help: "Remove due date")
     var removeDue = false
     
-    @Flag(name: .shortAndLong, help: "Remove tags")
+    @Flag(name: [.customShort("z"), .long], help: "Remove tags")
     var removeTags = false
     
     mutating func run() throws {
