@@ -87,11 +87,13 @@ todo list
 Mark as done:
 ```bash
 todo done 1
+todo done 1 2 3  # Mark multiple tasks as done
 ```
 
 Remove a todo:
 ```bash
-todo remove 1
+todo remove 1              # Remove a single task
+todo remove 1 2 3         # Remove multiple tasks at once
 ```
 
 Edit a todo:
