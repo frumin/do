@@ -7,7 +7,7 @@ typealias ArchivedTodoItem = TodoKit.ArchivedTodoItem
 typealias ArchiveReason = TodoKit.ArchiveReason
 
 extension Todo {
-    static let storage = TodoStorage()
+    static let storage = TodoKit.TodoStorage.shared
     
     static func format(_ todos: [Todo], showNumbers: Bool = true) -> String {
         guard !todos.isEmpty else { return "No todos found" }
