@@ -8,37 +8,35 @@ struct AddCommand: ParsableCommand {
         abstract: "Add a new todo ✨"
     )
     
-    @Argument(help: "The todo title")
+    @Argument(help: "The todo text")
     var title: String
     
-    @Option(name: .shortAndLong, help: "Set priority (high, medium, low)")
-    var priority: Todo.Priority = .none
+    @Option(name: [.customShort("p"), .long], help: "Set priority (1=high, 2=medium, 3=low, 4=none)")
+    var priority: Priority?
     
-    @Option(name: .shortAndLong, help: "Set due date (YYYY-MM-DD or natural language)")
+    @Option(name: [.customShort("d"), .long], help: "Set due date (YYYY-MM-DD or natural language)")
     var due: String?
     
-    @Option(name: .shortAndLong, help: "Add tags (comma-separated)")
+    @Option(name: [.customShort("t"), .long], help: "Add tags (comma-separated)")
     var tags: String?
     
     mutating func run() throws {
-        let dueDate = try due.flatMap { input in
-            try DateParser.parse(input)
+        var todo = Todo(title: title)
+        
+        if let priority = priority {
+            todo.priority = priority
         }
         
-        let tagList = tags?.split(separator: ",").map(String.init) ?? []
+        if let dueString = due {
+            todo.dueDate = DateParser.parse(dueString)
+        }
         
-        let todo = Todo(
-            title: title,
-            priority: priority,
-            dueDate: dueDate,
-            tags: tagList
-        )
+        if let tagsString = tags {
+            todo.tags = tagsString.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+        }
         
-        var todos = try Todo.storage.readTodos()
-        todos.append(todo)
-        try Todo.storage.writeTodos(todos)
-        
+        try Todo.storage.addTodo(todo)
         print("✨ Added todo:")
-        print(todo.format(index: nil))
+        print(todo.format())
     }
 } 

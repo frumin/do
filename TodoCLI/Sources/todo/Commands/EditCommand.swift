@@ -14,8 +14,8 @@ struct EditCommand: ParsableCommand {
     @Option(name: [.customShort("i"), .long], help: "New title")
     var title: String?
     
-    @Option(name: [.customShort("p"), .long], help: "New priority (high, medium, low)")
-    var priority: Todo.Priority?
+    @Option(name: [.customShort("p"), .long], help: "New priority (1=high, 2=medium, 3=low, 4=none)")
+    var priority: Priority?
     
     @Option(name: [.customShort("d"), .long], help: "New due date (YYYY-MM-DD or natural language)")
     var due: String?
@@ -32,31 +32,35 @@ struct EditCommand: ParsableCommand {
     mutating func run() throws {
         var todos = try Todo.storage.readTodos()
         guard number > 0 && number <= todos.count else {
-            throw ValidationError("Invalid todo number. Please use a number between 1 and \(todos.count).")
+            throw ValidationError("Invalid todo number: \(number)")
         }
         
-        let oldTodo = todos[number - 1]
+        var todo = todos[number - 1]
         
-        let dueDate = try due.flatMap { input in
-            try DateParser.parse(input)
+        if let title = title {
+            todo.title = title
         }
         
-        let tagList = tags?.split(separator: ",").map(String.init)
+        if let priority = priority {
+            todo.priority = priority
+        }
         
-        let newTodo = Todo(
-            id: oldTodo.id,
-            title: title ?? oldTodo.title,
-            priority: priority ?? oldTodo.priority,
-            dueDate: removeDue ? nil : (dueDate ?? oldTodo.dueDate),
-            tags: removeTags ? [] : (tagList ?? oldTodo.tags),
-            createdAt: oldTodo.createdAt
-        )
+        if removeDue {
+            todo.dueDate = nil
+        } else if let dueString = due {
+            todo.dueDate = DateParser.parse(dueString)
+        }
         
-        todos[number - 1] = newTodo
+        if removeTags {
+            todo.tags = []
+        } else if let tagsString = tags {
+            todo.tags = tagsString.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+        }
+        
+        todos[number - 1] = todo
         try Todo.storage.writeTodos(todos)
         
         print("✏️ Updated todo:")
-        print("Before: \(oldTodo.format(index: number))")
-        print("After:  \(newTodo.format(index: number))")
+        print(todo.format())
     }
 } 

@@ -41,11 +41,11 @@ Coming soon!
 ```bash
 # Add a new todo
 todo add "Buy groceries"
-todo add "Call mom" --priority high --due "tomorrow 2pm"
+todo add "Call mom" --priority 1 --due "tomorrow 2pm"  # Priority 1 = high
 
 # List todos
 todo list                  # List all todos
-todo list --priority high  # List high priority todos
+todo list --priority high  # List high priority todos (or use --priority 1)
 todo list --overdue       # List overdue todos
 
 # Mark todos as done
@@ -57,13 +57,19 @@ todo remove 1            # Remove todo #1
 todo remove 1 2 3       # Remove multiple todos
 
 # Edit todos
-todo edit 1 --text "New text" --priority medium
+todo edit 1 --text "New text" --priority 2  # Priority 2 = medium
 
 # View statistics
 todo stats               # Show basic statistics
 todo stats --tags       # Show tag statistics
 todo stats --archived   # Include archived todos
 ```
+
+Priority levels can be specified either by number or name:
+- 1 or "high"   = High priority ⚡
+- 2 or "medium" = Medium priority ●
+- 3 or "low"    = Low priority ○
+- 4 or "none"   = No priority
 
 For more details on any command, use:
 ```bash
